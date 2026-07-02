@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chi tiết linh kiện</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body data-page="detail">
+  <div id="header-placeholder"></div>
+  <main class="page-shell">
+    <section class="hero hero-simple">
+      <div>
+        <h1 id="detailTitle">Đang tải...</h1>
+        <p id="detailSubtitle" class="hero-text"></p>
+      </div>
+      <div class="hero-stats detail-stats">
+        <article><span>Loại</span><strong id="detailType">-</strong></article>
+        <article><span>Giá thấp nhất</span><strong id="detailLowestPrice">-</strong></article>
+        <article><span>Nguồn rẻ nhất</span><strong id="detailSource">-</strong></article>
+      </div>
+    </section>
+
+    <section class="detail-layout">
+      <div class="detail-image">
+        <div class="detail-visual">
+          <span class="detail-visual-chip">Product</span>
+          <strong id="detailVisualTitle">Linh kiện</strong>
+          <p id="detailVisualSubtitle">Mô tả sản phẩm</p>
+        </div>
+      </div>
+
+      <div class="detail-content">
+        <article class="panel-card">
+          <p class="eyebrow">Thông số</p>
+          <h2>Chi tiết kỹ thuật</h2>
+          <div id="detailSpecs" class="spec-list"></div>
+        </article>
+
+        <article class="panel-card">
+          <div id="detailPrices" class="stack"></div>
+        </article>
+
+        <article class="panel-card">
+          <p class="eyebrow">Đánh giá</p>
+          <div id="detailReviews" class="stack"></div>
+          <label>Viết đánh giá <textarea id="reviewText" placeholder="Chia sẻ cảm nhận của bạn..."></textarea></label>
+          <button id="submitReviewBtn" class="button primary" type="button">Gửi đánh giá</button>
+        </article>
+      </div>
+    </section>
+  </main>
+  <div id="footer-placeholder"></div>
+  <script src="../assets/js/app.js"></script>
+</body>
+</html>

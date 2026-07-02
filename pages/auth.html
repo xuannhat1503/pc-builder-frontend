@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Đăng nhập & Đăng ký</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body data-page="auth">
+  <div id="header-placeholder"></div>
+  <main class="page-shell auth-page">
+    <section class="hero hero-simple">
+      <div>
+        <h1>Đăng nhập hoặc tạo tài khoản mới</h1>
+      </div>
+    </section>
+
+    <section class="auth-grid">
+      <article class="panel-card">
+        <p class="eyebrow">Đăng nhập</p>
+        <h2>Vào tài khoản hiện có</h2>
+        <label>Email <input id="loginEmail" type="email" placeholder="email@domain.com" /></label>
+         <label>Mật khẩu <input id="loginPassword" type="password" placeholder="Mật khẩu" /></label>
+        <button id="loginBtn" class="button primary" type="button">Đăng nhập</button>
+      </article>
+      <article class="panel-card">
+        <p class="eyebrow">Đăng ký</p>
+        <h2>Tạo tài khoản mới</h2>
+        <label>Email <input id="registerEmail" type="email" placeholder="email@domain.com" /></label>
+        <label>Mật khẩu <input id="registerPassword" type="password" placeholder="Mật khẩu" /></label>
+        <label>Xác nhận mật khẩu <input id="registerPasswordConfirm" type="password" placeholder="Xác nhận mật khẩu" /></label>
+         <p class="muted">Tài khoản mới sẽ có vai trò USER. Để trở thành admin, liên hệ quản trị viên.</p>
+        <button id="registerBtn" class="button ghost" type="button">Đăng ký</button>
+      </article>
+    </section>
+
+    <div id="authMessage" class="notice"></div>
+  </main>
+  <div id="footer-placeholder"></div>
+  <script src="../assets/js/app.js"></script>
+</body>
+</html>

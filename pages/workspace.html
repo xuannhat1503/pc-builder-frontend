@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Workspace</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
+</head>
+<body data-page="workspace">
+  <div id="header-placeholder"></div>
+  <main class="page-shell workspace-page">
+    <section class="hero hero-simple">
+      <div>
+        <h1>Workspace</h1>
+      </div>
+    </section>
+
+    <section class="workspace-layout">
+      <article class="panel-card">
+        <div class="form-grid">
+          <label>CPU <select id="workspaceCpuSelect"></select></label>
+          <label>Mainboard <select id="workspaceMainboardSelect"></select></label>
+          <label>RAM <select id="workspaceRamSelect"></select></label>
+          <label>GPU <select id="workspaceGpuSelect"></select></label>
+          <label>PSU <select id="workspacePsuSelect"></select></label>
+        </div>
+        <button id="checkCompatibilityBtn" class="button primary" type="button">Kiểm tra tương thích</button>
+        <button id="saveWorkspaceBuildBtn" class="button primary" type="button">Lưu cấu hình</button>
+        <div id="workspaceResult" class="notice"></div>
+        <div id="workspaceSummary" class="stack"></div>
+      </article>
+    </section>
+  </main>
+  <div id="footer-placeholder"></div>
+  <script src="../assets/js/app.js"></script>
+</body>
+</html>
