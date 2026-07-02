@@ -203,14 +203,14 @@ function prefix() {
 }
 function pageHref(page, query = '') {
   const map = {
-    home: `${prefix()}index.html`,
-    auth: `${prefix()}pages/auth.html`,
-    catalog: `${prefix()}pages/catalog.html`,
-    detail: `${prefix()}pages/detail.html`,
-    workspace: `${prefix()}pages/workspace.html`,
-    compare: `${prefix()}pages/compare.html`,
-    account: `${prefix()}pages/account.html`,
-    admin: `${prefix()}pages/admin.html`
+    home: `/index.html`,
+    auth: `/pages/auth.html`,
+    catalog: `/pages/catalog.html`,
+    detail: `/pages/detail.html`,
+    workspace: `/pages/workspace.html`,
+    compare: `/pages/compare.html`,
+    account: `/pages/account.html`,
+    admin: `/pages/admin.html`
   };
   return `${map[page] || map.home}${query}`;
 }
