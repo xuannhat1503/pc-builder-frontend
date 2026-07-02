@@ -258,12 +258,13 @@ async function loadShell() {
   const headerTarget = byId('header-placeholder');
   const footerTarget = byId('footer-placeholder');
 
+  // Đảm bảo đường dẫn này khớp với cấu trúc thư mục thực tế trên Vercel
+  // Nếu file đang ở /components/header.html, hãy bỏ chữ /frontend đi
   await Promise.all([
-    headerTarget ? fetch(`${prefix()}components/header.html`).then((response) => response.text()).then((html) => { headerTarget.innerHTML = html; }) : Promise.resolve(),
-    footerTarget ? fetch(`${prefix()}components/footer.html`).then((response) => response.text()).then((html) => { footerTarget.innerHTML = html; }) : Promise.resolve()
+    headerTarget ? fetch(`/components/header.html`).then(r => r.text()).then(html => headerTarget.innerHTML = html) : Promise.resolve(),
+    footerTarget ? fetch(`/components/footer.html`).then(r => r.text()).then(html => footerTarget.innerHTML = html) : Promise.resolve()
   ]);
 }
-
 function componentTypeToLabel(type) {
   return componentMeta[type]?.label || type.toUpperCase();
 }
