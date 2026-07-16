@@ -199,8 +199,8 @@ function pageName() {
 
 function prefix() {
   const pathname = location.pathname.replace(/\\/g, '/');
-  if (pathname.includes('/frontend/pages/')) return '../';
-  return '/frontend/';
+  if (pathname.includes('/pages/')) return '../';
+  return './';
 }
 
 function pageHref(page, query = '') {
