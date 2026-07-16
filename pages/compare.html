@@ -3,28 +3,62 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>So sánh linh kiện</title>
-  <link rel="stylesheet" href="/assets/css/style.css" />
+  <title>So sánh linh kiện — PCBuilder</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
 </head>
 <body data-page="compare">
   <div id="header-placeholder"></div>
-  <main class="page-shell">
-    <section class="hero hero-simple">
-      <div>
-        <h1>Đối chiếu thông số kỹ thuật</h1>
-      </div>
-    </section>
 
-    <section class="panel-card">
-      <div class="form-grid compare-grid">
-        <label>Loại linh kiện <select id="compareCategory"></select></label>
-        <label>Bên trái <select id="compareLeft"></select></label>
-        <label>Bên phải <select id="compareRight"></select></label>
+  <main>
+    <div class="page-shell">
+
+      <div class="page-hero diag-band">
+        <div class="hero-eyebrow">So sánh</div>
+        <h1>Đối chiếu <em>thông số kỹ thuật</em></h1>
+        <p>Chọn hai linh kiện cùng loại để so sánh chi tiết side-by-side</p>
       </div>
-      <div id="compareResult" class="compare-result"></div>
-    </section>
+
+      <!-- Selectors -->
+      <div class="card" style="margin-bottom:24px">
+        <div class="section-heading" style="font-size:18px;margin-bottom:18px">
+          <small>Lựa chọn</small>
+          Chọn linh kiện để so sánh
+        </div>
+        <div class="compare-selectors">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <label>
+              <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3)">Loại linh kiện</span>
+              <select id="compareCategory"></select>
+            </label>
+          </div>
+          <div class="compare-vs">VS</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:end">
+            <label>
+              <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3)">Linh kiện A</span>
+              <select id="compareLeft"></select>
+            </label>
+            <label>
+              <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3)">Linh kiện B</span>
+              <select id="compareRight"></select>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div id="compareResult">
+        <div class="empty">
+          <div class="empty-icon">⚖️</div>
+          <span style="font-size:15px;font-weight:600;color:var(--text-3)">Chọn hai linh kiện để so sánh</span>
+          <span style="font-size:13px">Kết quả sẽ hiện bên dưới</span>
+        </div>
+      </div>
+
+    </div>
   </main>
+
   <div id="footer-placeholder"></div>
-  <script src="/assets/js/app.js"></script>
+  <div id="toast-container"></div>
+  <script src="../assets/js/app.js"></script>
 </body>
 </html>

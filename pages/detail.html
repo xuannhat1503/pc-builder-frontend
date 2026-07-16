@@ -3,54 +3,134 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chi tiết linh kiện</title>
-  <link rel="stylesheet" href="/assets/css/style.css" />
+  <title>Chi tiết linh kiện — PCBuilder</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
 </head>
 <body data-page="detail">
   <div id="header-placeholder"></div>
-  <main class="page-shell">
-    <section class="hero hero-simple">
-      <div>
-        <h1 id="detailTitle">Đang tải...</h1>
-        <p id="detailSubtitle" class="hero-text"></p>
-      </div>
-      <div class="hero-stats detail-stats">
-        <article><span>Loại</span><strong id="detailType">-</strong></article>
-        <article><span>Giá thấp nhất</span><strong id="detailLowestPrice">-</strong></article>
-        <article><span>Nguồn rẻ nhất</span><strong id="detailSource">-</strong></article>
-      </div>
-    </section>
 
-    <section class="detail-layout">
-      <div class="detail-image">
-        <div class="detail-visual">
-          <span class="detail-visual-chip">Product</span>
-          <strong id="detailVisualTitle">Linh kiện</strong>
-          <p id="detailVisualSubtitle">Mô tả sản phẩm</p>
+  <main>
+    <div class="page-shell">
+
+      <!-- Breadcrumb -->
+      <nav style="font-size:13px;color:var(--text-3);margin-bottom:20px;display:flex;align-items:center;gap:8px">
+        <a href="../pages/catalog.html" style="color:var(--navy);font-weight:600;transition:color .2s"
+           onmouseover="this.style.color='var(--crimson)'" onmouseout="this.style.color='var(--navy)'">← Linh kiện</a>
+        <span>/</span>
+        <span id="detailBreadcrumb">Chi tiết</span>
+      </nav>
+
+      <!-- Page hero -->
+      <div class="page-hero diag-band" style="margin-bottom:28px">
+        <div class="page-hero-row">
+          <div>
+            <div id="detailBadge" style="margin-bottom:10px"></div>
+            <h1 id="detailTitle">Đang tải...</h1>
+            <p id="detailSubtitle" style="margin-top:6px"></p>
+          </div>
+          <div style="display:flex;gap:8px;flex-shrink:0;align-items:flex-end">
+            <a href="../pages/workspace.html" class="btn outline btn-sm">⚙️ Thêm vào Workspace</a>
+          </div>
+        </div>
+        <div class="hero-stats detail-stats" style="display:flex;gap:24px;flex-wrap:wrap;margin-top:16px">
+          <div><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3)">Loại</span><br><strong id="detailType" style="font-size:15px;color:var(--navy)">—</strong></div>
+          <div><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3)">Giá thấp nhất</span><br><strong id="detailLowestPrice" style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--crimson)">—</strong></div>
+          <div><span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3)">Nguồn rẻ nhất</span><br><strong id="detailSource" style="font-size:15px;color:var(--navy)">—</strong></div>
         </div>
       </div>
 
-      <div class="detail-content">
-        <article class="panel-card">
-          <p class="eyebrow">Thông số</p>
-          <h2>Chi tiết kỹ thuật</h2>
-          <div id="detailSpecs" class="spec-list"></div>
-        </article>
+      <!-- Main grid -->
+      <div class="detail-layout">
 
-        <article class="panel-card">
-          <div id="detailPrices" class="stack"></div>
-        </article>
+        <!-- Left: visual + specs -->
+        <div style="display:flex;flex-direction:column;gap:20px">
 
-        <article class="panel-card">
-          <p class="eyebrow">Đánh giá</p>
-          <div id="detailReviews" class="stack"></div>
-          <label>Viết đánh giá <textarea id="reviewText" placeholder="Chia sẻ cảm nhận của bạn..."></textarea></label>
-          <button id="submitReviewBtn" class="button primary" type="button">Gửi đánh giá</button>
-        </article>
+          <div class="detail-visual-box">
+            <span class="detail-visual-chip" id="detailVisualChip">Linh kiện</span>
+            <strong id="detailVisualTitle">—</strong>
+            <p id="detailVisualSubtitle">—</p>
+          </div>
+
+          <div class="card">
+            <div class="section-heading" style="font-size:20px;margin-bottom:14px">
+              <small>Kỹ thuật</small>
+              Thông số chi tiết
+            </div>
+            <div id="detailSpecs" class="spec-list">
+              <div class="skeleton sk-line" style="margin:8px 0"></div>
+              <div class="skeleton sk-line" style="margin:8px 0"></div>
+              <div class="skeleton sk-line" style="margin:8px 0"></div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: prices + chart + reviews -->
+        <div style="display:flex;flex-direction:column;gap:20px">
+
+          <!-- Prices -->
+          <div class="card">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+              <div class="section-heading" style="font-size:20px;margin:0">
+                <small>Thị trường</small>
+                Giá từ các nguồn
+              </div>
+            </div>
+            <div class="price-source-list" id="detailPrices">
+              <div class="skeleton" style="height:54px;border-radius:12px"></div>
+              <div class="skeleton" style="height:54px;border-radius:12px;margin-top:8px"></div>
+            </div>
+          </div>
+
+          <!-- Price chart -->
+          <div class="card" id="chartCard">
+            <div class="section-heading" style="font-size:20px;margin-bottom:12px">
+              <small>Lịch sử</small>
+              Biến động giá
+            </div>
+            <div class="price-chart-wrap">
+              <canvas id="priceChart" height="200" style="width:100%;display:block"></canvas>
+              <div id="priceChartEmpty" class="empty" style="display:none;padding:20px 0">
+                <div class="empty-icon">📊</div>
+                <span>Chưa có dữ liệu giá</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reviews -->
+          <div class="card">
+            <div class="section-heading" style="font-size:20px;margin-bottom:16px">
+              <small>Cộng đồng</small>
+              Đánh giá &amp; nhận xét
+            </div>
+
+            <div id="detailReviews" class="stack" style="margin-bottom:16px"></div>
+
+            <!-- Write review (logged in) -->
+            <div id="reviewFormWrap" style="display:none;flex-direction:column;gap:12px;padding-top:18px;border-top:1px solid var(--border)">
+              <div style="font-size:14px;font-weight:700;color:var(--navy)">Viết đánh giá của bạn</div>
+              <label>
+                Nội dung nhận xét
+                <textarea id="reviewText" placeholder="Chia sẻ cảm nhận về linh kiện này..."></textarea>
+              </label>
+              <button id="submitReviewBtn" class="btn primary">Gửi đánh giá</button>
+            </div>
+
+            <!-- Not logged in prompt -->
+            <div id="reviewLoginPrompt" style="padding-top:16px;border-top:1px solid var(--border);text-align:center">
+              <p style="font-size:14px;color:var(--text-3);margin-bottom:12px">Đăng nhập để viết đánh giá</p>
+              <a href="../pages/auth.html" class="btn outline btn-sm">Đăng nhập</a>
+            </div>
+          </div>
+
+        </div>
       </div>
-    </section>
+
+    </div>
   </main>
+
   <div id="footer-placeholder"></div>
-  <script src="/assets/js/app.js"></script>
+  <div id="toast-container"></div>
+  <script src="../assets/js/app.js"></script>
 </body>
 </html>

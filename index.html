@@ -1,27 +1,156 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hệ thống hỗ trợ xây dựng cấu hình máy tính</title>
-    <link rel="stylesheet" href="/assets/css/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PCBuilder — Hệ thống hỗ trợ xây dựng cấu hình máy tính</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
 </head>
 <body data-page="home">
-    <div id="header-placeholder"></div>
+  <div id="header-placeholder"></div>
 
-    <main class="page page-home">
-        <section class="hero-card">
-            <div>
-                <h1>Hệ thống hỗ trợ xây dựng cấu hình máy tính</h1>
-                <div class="hero-actions">
-                    <a class="btn primary" href="/pages/catalog.html">Vào danh sách linh kiện</a>
-                    <a class="btn outline" href="/pages/workspace.html">Mở workspace</a>
-                </div>
+  <main>
+    <div class="page-shell">
+
+      <!-- HERO -->
+      <section class="hero-banner diag-band">
+        <div>
+          <div class="hero-eyebrow">Hệ thống tư vấn cấu hình PC</div>
+          <h1>Xây dựng cấu hình<br><em>thông minh &amp; tối ưu</em></h1>
+          <p class="hero-sub">
+            So sánh linh kiện, kiểm tra tương thích, theo dõi giá thời gian thực
+            và nhận tư vấn từ AI — tất cả trong một nơi.
+          </p>
+          <div class="hero-actions">
+            <a class="btn primary btn-lg" href="pages/workspace.html">Bắt đầu build</a>
+            <a class="btn outline btn-lg" href="pages/catalog.html">Xem linh kiện</a>
+          </div>
+        </div>
+
+        <!-- Config preview card -->
+        <div class="config-preview">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+            <span style="width:8px;height:8px;border-radius:50%;background:#34d399;display:block"></span>
+            <span style="font-size:12px;color:var(--text-3);font-weight:600">Gợi ý cấu hình hôm nay</span>
+          </div>
+
+          <div class="config-row">
+            <div class="config-row-icon">🔲</div>
+            <div style="flex:1">
+              <div class="config-row-name">Intel Core i5-13600K</div>
+              <div class="config-row-sub">CPU · LGA1700 · 125W TDP</div>
             </div>
-        </section>
-    </main>
+            <span class="config-row-price">~6.9M đ</span>
+          </div>
 
-    <div id="footer-placeholder"></div>
-    <script src="/assets/js/app.js"></script>
+          <div class="config-row">
+            <div class="config-row-icon">🎮</div>
+            <div style="flex:1">
+              <div class="config-row-name">RTX 4060 Ti 8GB</div>
+              <div class="config-row-sub">GPU · 8GB VRAM · 165W TDP</div>
+            </div>
+            <span class="config-row-price">~12M đ</span>
+          </div>
+
+          <div class="config-row">
+            <div class="config-row-icon">💾</div>
+            <div style="flex:1">
+              <div class="config-row-name">DDR5 32GB 5600MHz</div>
+              <div class="config-row-sub">RAM · DDR5 · 2×16GB</div>
+            </div>
+            <span class="config-row-price">~2.8M đ</span>
+          </div>
+
+          <div class="config-row">
+            <div class="config-row-icon">🖥️</div>
+            <div style="flex:1">
+              <div class="config-row-name">ASUS ROG STRIX Z790-F</div>
+              <div class="config-row-sub">Mainboard · LGA1700 · DDR5</div>
+            </div>
+            <span class="config-row-price">~5.5M đ</span>
+          </div>
+
+          <div class="config-total">
+            <span>Tổng ước tính</span>
+            <strong>~27.2M đ</strong>
+          </div>
+        </div>
+      </section>
+
+      <!-- STATS -->
+      <div class="stats-grid" id="homeStats">
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-label">Linh kiện</div>
+          <div class="stat-value" id="statComponents">—</div>
+          <div class="stat-sub">CPU, GPU, RAM, MB, PSU</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔧</div>
+          <div class="stat-label">Build đã tạo</div>
+          <div class="stat-value" id="statBuilds">—</div>
+          <div class="stat-sub">Cấu hình từ người dùng</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-label">Đánh giá</div>
+          <div class="stat-value" id="statReviews">—</div>
+          <div class="stat-sub">Review từ cộng đồng</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-label">Nguồn giá</div>
+          <div class="stat-value" id="statSources">—</div>
+          <div class="stat-sub">So sánh từ nhiều shop</div>
+        </div>
+      </div>
+
+      <!-- FEATURES -->
+      <div style="margin-bottom:20px">
+        <div class="section-heading">
+          <small>Tính năng</small>
+          Khám phá hệ thống
+        </div>
+      </div>
+
+      <div class="feature-grid" id="homeScreenGrid">
+        <a class="feature-card" href="pages/catalog.html">
+          <div class="feature-icon">📦</div>
+          <h3>Danh sách linh kiện</h3>
+          <p>Xem toàn bộ CPU, GPU, RAM, Mainboard, PSU với giá thấp nhất từ nhiều nguồn.</p>
+        </a>
+        <a class="feature-card" href="pages/workspace.html">
+          <div class="feature-icon">⚙️</div>
+          <h3>Workspace</h3>
+          <p>Chọn linh kiện, kiểm tra tương thích tự động và lưu cấu hình của bạn.</p>
+        </a>
+        <a class="feature-card" href="pages/compare.html">
+          <div class="feature-icon">⚖️</div>
+          <h3>So sánh linh kiện</h3>
+          <p>Đối chiếu thông số kỹ thuật giữa 2 linh kiện cùng loại side-by-side.</p>
+        </a>
+        <a class="feature-card" href="pages/workspace.html">
+          <div class="feature-icon">🤖</div>
+          <h3>Tư vấn AI</h3>
+          <p>Chat với AI để nhận gợi ý cấu hình phù hợp ngân sách và nhu cầu.</p>
+        </a>
+        <a class="feature-card" href="pages/catalog.html">
+          <div class="feature-icon">📈</div>
+          <h3>Theo dõi giá</h3>
+          <p>Biểu đồ lịch sử giá từ GearVN, Phong Vũ, TNC, An Phát và nhiều hơn.</p>
+        </a>
+        <a class="feature-card" href="pages/auth.html">
+          <div class="feature-icon">👤</div>
+          <h3>Tài khoản</h3>
+          <p>Đăng nhập để lưu build, viết review và theo dõi lịch sử cấu hình.</p>
+        </a>
+      </div>
+
+    </div>
+  </main>
+
+  <div id="footer-placeholder"></div>
+  <div id="toast-container"></div>
+  <script src="assets/js/app.js"></script>
 </body>
 </html>

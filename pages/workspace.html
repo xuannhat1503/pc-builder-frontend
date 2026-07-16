@@ -3,35 +3,152 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Workspace</title>
-  <link rel="stylesheet" href="/assets/css/style.css" />
+  <title>Workspace — PCBuilder</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
 </head>
 <body data-page="workspace">
   <div id="header-placeholder"></div>
-  <main class="page-shell workspace-page">
-    <section class="hero hero-simple">
-      <div>
-        <h1>Workspace</h1>
-      </div>
-    </section>
 
-    <section class="workspace-layout">
-      <article class="panel-card">
-        <div class="form-grid">
-          <label>CPU <select id="workspaceCpuSelect"></select></label>
-          <label>Mainboard <select id="workspaceMainboardSelect"></select></label>
-          <label>RAM <select id="workspaceRamSelect"></select></label>
-          <label>GPU <select id="workspaceGpuSelect"></select></label>
-          <label>PSU <select id="workspacePsuSelect"></select></label>
+  <main>
+    <div class="page-shell">
+
+      <!-- Page hero -->
+      <div class="page-hero diag-band">
+        <div class="hero-eyebrow">Build PC</div>
+        <h1>Workspace <em>cấu hình</em></h1>
+        <p>Chọn linh kiện, kiểm tra tương thích và tư vấn với AI trong một nơi</p>
+      </div>
+
+      <div class="workspace-layout">
+
+        <!-- LEFT: Component selectors + compat result -->
+        <div style="display:flex;flex-direction:column;gap:20px">
+
+          <div class="card">
+            <div class="section-heading" style="font-size:20px;margin-bottom:20px">
+              <small>Linh kiện</small>
+              Chọn cấu hình
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:10px">
+
+              <div class="selector-row">
+                <div class="selector-icon">🔲</div>
+                <div style="flex:1;min-width:0">
+                  <div class="selector-label">CPU</div>
+                  <select id="workspaceCpuSelect" class="selector-select"></select>
+                </div>
+              </div>
+
+              <div class="selector-row">
+                <div class="selector-icon">🖥️</div>
+                <div style="flex:1;min-width:0">
+                  <div class="selector-label">Mainboard</div>
+                  <select id="workspaceMainboardSelect" class="selector-select"></select>
+                </div>
+              </div>
+
+              <div class="selector-row">
+                <div class="selector-icon">💾</div>
+                <div style="flex:1;min-width:0">
+                  <div class="selector-label">RAM</div>
+                  <select id="workspaceRamSelect" class="selector-select"></select>
+                </div>
+              </div>
+
+              <div class="selector-row">
+                <div class="selector-icon">🎮</div>
+                <div style="flex:1;min-width:0">
+                  <div class="selector-label">GPU</div>
+                  <select id="workspaceGpuSelect" class="selector-select"></select>
+                </div>
+              </div>
+
+              <div class="selector-row">
+                <div class="selector-icon">⚡</div>
+                <div style="flex:1;min-width:0">
+                  <div class="selector-label">PSU</div>
+                  <select id="workspacePsuSelect" class="selector-select"></select>
+                </div>
+              </div>
+
+            </div>
+
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px">
+              <button id="checkCompatibilityBtn" class="btn primary">🔍 Kiểm tra tương thích</button>
+              <button id="saveWorkspaceBuildBtn" class="btn outline">💾 Lưu cấu hình</button>
+            </div>
+          </div>
+
+          <!-- Compat result -->
+          <div id="workspaceResult"></div>
+
+          <!-- Summary -->
+          <div class="card" id="workspaceSummaryCard" style="display:none">
+            <div class="section-heading" style="font-size:18px;margin-bottom:14px">
+              <small>Tổng kết</small>
+              Cấu hình đã chọn
+            </div>
+            <div id="workspaceSummary" class="stack"></div>
+          </div>
+
         </div>
-        <button id="checkCompatibilityBtn" class="button primary" type="button">Kiểm tra tương thích</button>
-        <button id="saveWorkspaceBuildBtn" class="button primary" type="button">Lưu cấu hình</button>
-        <div id="workspaceResult" class="notice"></div>
-        <div id="workspaceSummary" class="stack"></div>
-      </article>
-    </section>
+
+        <!-- RIGHT: Inline AI chat -->
+        <div class="ws-chat-panel">
+
+          <!-- Chat header -->
+          <div class="ws-chat-header">
+            <div class="chat-avatar" style="width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🤖</div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:700;color:#fff">AI Tư vấn cấu hình</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.6);display:flex;align-items:center;gap:4px">
+                <span style="width:6px;height:6px;border-radius:50%;background:#34d399;display:block"></span>
+                Sẵn sàng hỗ trợ
+              </div>
+            </div>
+            <button id="wsClearChatBtn"
+              style="padding:6px 12px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.7);font-size:12px;font-weight:600;cursor:pointer;transition:background .2s"
+              onmouseover="this.style.background='rgba(255,255,255,.2)'"
+              onmouseout="this.style.background='rgba(255,255,255,.1)'">
+              Xóa chat
+            </button>
+          </div>
+
+          <!-- Quick hint chips -->
+          <div style="padding:10px 14px;background:var(--off-white);border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap">
+            <button class="chip ws-hint" style="font-size:12px;padding:6px 12px">Cấu hình này có tốt không?</button>
+            <button class="chip ws-hint" style="font-size:12px;padding:6px 12px">Gợi ý CPU phù hợp</button>
+            <button class="chip ws-hint" style="font-size:12px;padding:6px 12px">Tổng giá bao nhiêu?</button>
+          </div>
+
+          <!-- Messages -->
+          <div id="chatMessages" class="ws-chat-messages">
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;text-align:center;padding:24px;color:var(--text-3)">
+              <span style="font-size:36px;opacity:.25">🤖</span>
+              <span style="font-size:14px;font-weight:600">AI tư vấn cấu hình PC</span>
+              <span style="font-size:13px">Chọn linh kiện rồi đặt câu hỏi bất kỳ</span>
+            </div>
+          </div>
+
+          <!-- Compose -->
+          <div class="ws-chat-compose">
+            <div class="compose-inner">
+              <textarea id="chatInput" rows="1"
+                placeholder="Hỏi về cấu hình, tương thích, ngân sách..."
+                style="flex:1;background:none;border:none;outline:none;font-size:13px;color:var(--text);resize:none;max-height:100px;line-height:1.5;padding:2px 0;font-family:inherit;min-height:32px"></textarea>
+              <button id="sendChatBtn" class="chat-send-btn">➤</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
   </main>
+
   <div id="footer-placeholder"></div>
-  <script src="/assets/js/app.js"></script>
+  <div id="toast-container"></div>
+  <script src="../assets/js/app.js"></script>
 </body>
 </html>

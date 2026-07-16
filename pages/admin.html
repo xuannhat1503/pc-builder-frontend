@@ -3,109 +3,159 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Quản trị hệ thống</title>
-  <link rel="stylesheet" href="/assets/css/style.css" />
+  <title>Quản trị — PCBuilder</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
 </head>
 <body data-page="admin">
   <div id="header-placeholder"></div>
-  <main class="page-shell admin-page">
-    <section class="hero hero-simple">
-      <div>
-        <h1>Quản trị hệ thống</h1>
+
+  <main>
+    <div class="page-shell">
+
+      <!-- Page hero -->
+      <div class="page-hero diag-band">
+        <div class="hero-eyebrow">Admin</div>
+        <h1>Quản trị <em>hệ thống</em></h1>
+        <p>Quản lý linh kiện, giá, người dùng, review và build</p>
       </div>
-    </section>
 
-    <section id="adminStats" class="stats-row"></section>
+      <!-- Stats -->
+      <div id="adminStats" class="admin-stats-grid"></div>
 
-    <!-- TABS NAVIGATION -->
-    <div class="admin-tabs" style="display: flex; gap: 0; border-bottom: 2px solid #dbe9dd; margin-bottom: 20px;">
-      <button class="admin-tab-btn active" data-tab="component" style="padding: 12px 20px; background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: 600; color: #555; transition: all 0.3s;">Linh kiện</button>
-      <button class="admin-tab-btn" data-tab="users" style="padding: 12px 20px; background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: 600; color: #555; transition: all 0.3s;">Người dùng</button>
-      <button class="admin-tab-btn" data-tab="reviews" style="padding: 12px 20px; background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: 600; color: #555; transition: all 0.3s;">Review</button>
-      <button class="admin-tab-btn" data-tab="builds" style="padding: 12px 20px; background: none; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-weight: 600; color: #555; transition: all 0.3s;">Build</button>
-    </div>
+      <!-- Tabs -->
+      <div class="admin-tabs">
+        <button class="admin-tab-btn active" data-tab="component">⚙️ Linh kiện</button>
+        <button class="admin-tab-btn" data-tab="users">👥 Người dùng</button>
+        <button class="admin-tab-btn" data-tab="reviews">⭐ Review</button>
+        <button class="admin-tab-btn" data-tab="builds">🔧 Build</button>
+      </div>
 
-    <!-- TAB: COMPONENT -->
-    <div id="tab-component" class="admin-tab-content" style="display: block;">
-      <section class="admin-layout">
-        <article class="panel-card">
-          <h2>Thêm component mới</h2>
-          <div class="form-grid">
-            <label>Loại linh kiện <select id="adminNewComponentType"><option>CPU</option><option>Mainboard</option><option>RAM</option><option>GPU</option><option>PSU</option></select></label>
-            <label>Tên <input id="adminNewComponentName" type="text" placeholder="Ví dụ: Intel Core i7-13700K" /></label>
-            <label>Brand <input id="adminNewComponentBrand" type="text" placeholder="Intel, AMD, ..." /></label>
-            <div id="adminNewComponentFields" class="form-grid"></div>
-          </div>
-          <div class="notice">Tên và Brand sẽ được lưu vào linh kiện gốc. Thông số bên dưới sẽ đi đúng vào API backend theo loại linh kiện.</div>
-          <button id="adminAddComponentBtn" class="button primary" type="button">Thêm component</button>
-          <div id="adminAddMessage" class="notice"></div>
-        </article>
+      <!-- TAB: COMPONENT -->
+      <div id="tab-component" class="admin-tab-content active">
+        <div class="admin-layout">
 
-        <article class="panel-card">
-          <h2>Sửa linh kiện</h2>
-          <label>Chọn linh kiện <select id="adminEditComponentSelect"></select></label>
-          <div id="adminEditComponentFields" class="form-grid"></div>
-          <button id="adminUpdateComponentBtn" class="button primary" type="button">Cập nhật</button>
-          <button id="adminDeleteComponentBtn" class="button ghost" type="button">Xóa</button>
-          <div id="adminEditMessage" class="notice"></div>
-        </article>
-
-        <article class="panel-card">
-          <h2>Quản lý giá crawl</h2>
-          <div id="adminPricesContainer" style="display: none;">
-            <div style="margin-bottom: 20px;">
-              <h3 style="margin-bottom: 10px;">Danh sách giá hiện tại</h3>
-              <div id="adminComponentPricesList" class="stack"></div>
+          <!-- Add new -->
+          <div class="card">
+            <div class="section-heading" style="font-size:18px;margin-bottom:18px">
+              <small>Thêm mới</small>
+              Thêm linh kiện
             </div>
-            <div style="border-top: 1px solid #dbe9dd; padding-top: 20px;">
-              <h3 style="margin-bottom: 10px;">Thêm giá crawl mới</h3>
-              <div class="form-grid">
-                <label>Nguồn <input id="adminCrawlSourceName" list="adminSourceNameOptions" type="text" placeholder="Ví dụ: GearVN, Tin Học Ngôi Sao" /></label>
-                <label>URL sản phẩm <input id="adminCrawlUrl" type="url" placeholder="https://gearvn.com/products/..." /></label>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <label>
+                Loại linh kiện
+                <select id="adminNewComponentType">
+                  <option>CPU</option>
+                  <option>Mainboard</option>
+                  <option>RAM</option>
+                  <option>GPU</option>
+                  <option>PSU</option>
+                </select>
+              </label>
+              <label>Tên <input id="adminNewComponentName" type="text" placeholder="VD: Intel Core i7-13700K" /></label>
+              <label>Brand <input id="adminNewComponentBrand" type="text" placeholder="Intel, AMD, ASUS..." /></label>
+              <div id="adminNewComponentFields" style="display:flex;flex-direction:column;gap:10px"></div>
+            </div>
+            <div class="notice" style="margin-top:12px;font-size:13px">
+              Tên và Brand lưu vào linh kiện gốc. Thông số bên dưới theo loại linh kiện.
+            </div>
+            <button id="adminAddComponentBtn" class="btn primary" style="margin-top:14px">➕ Thêm linh kiện</button>
+            <div id="adminAddMessage" style="margin-top:10px;font-size:13px;color:var(--text-3)"></div>
+          </div>
+
+          <!-- Edit -->
+          <div class="card">
+            <div class="section-heading" style="font-size:18px;margin-bottom:18px">
+              <small>Chỉnh sửa</small>
+              Sửa linh kiện
+            </div>
+            <label>
+              Chọn linh kiện
+              <select id="adminEditComponentSelect"></select>
+            </label>
+            <div id="adminEditComponentFields" style="display:flex;flex-direction:column;gap:10px;margin-top:12px"></div>
+            <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+              <button id="adminUpdateComponentBtn" class="btn primary">✏️ Cập nhật</button>
+              <button id="adminDeleteComponentBtn" class="btn outline">🗑️ Xóa</button>
+            </div>
+            <div id="adminEditMessage" style="margin-top:10px;font-size:13px;color:var(--text-3)"></div>
+          </div>
+
+          <!-- Prices -->
+          <div class="card">
+            <div class="section-heading" style="font-size:18px;margin-bottom:18px">
+              <small>Giá crawl</small>
+              Quản lý giá
+            </div>
+
+            <div id="adminPricesEmpty" class="notice" style="font-size:13px">
+              Chọn một linh kiện ở cột bên để quản lý giá crawl
+            </div>
+
+            <div id="adminPricesContainer" style="display:none">
+              <div style="margin-bottom:18px">
+                <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px">Danh sách giá hiện tại</div>
+                <div id="adminComponentPricesList" class="stack"></div>
               </div>
-              <button id="adminAddPriceBtn" class="button primary" type="button">Crawl giá</button>
-              <div id="adminPriceMessage" class="notice"></div>
+              <div style="border-top:1px solid var(--border);padding-top:16px">
+                <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:10px">Thêm giá crawl mới</div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <label>
+                    Nguồn
+                    <input id="adminCrawlSourceName" list="adminSourceNameOptions" type="text" placeholder="GearVN, Phong Vũ, TNC..." />
+                  </label>
+                  <label>
+                    URL sản phẩm
+                    <input id="adminCrawlUrl" type="url" placeholder="https://gearvn.com/products/..." />
+                  </label>
+                </div>
+                <button id="adminAddPriceBtn" class="btn primary" style="margin-top:12px">🔗 Crawl giá</button>
+                <div id="adminPriceMessage" style="margin-top:8px;font-size:13px;color:var(--text-3)"></div>
+              </div>
             </div>
+            <datalist id="adminSourceNameOptions"></datalist>
           </div>
-          <datalist id="adminSourceNameOptions"></datalist>
-          <div id="adminPricesEmpty" class="notice" style="display: none;">Vui lòng chọn một linh kiện để quản lý giá crawl</div>
-        </article>
-      </section>
-    </div>
 
-    <!-- TAB: USERS -->
-    <div id="tab-users" class="admin-tab-content" style="display: none;">
-      <section class="admin-layout">
-        <article class="panel-card">
-          <h2>Danh sách người dùng</h2>
+        </div>
+      </div>
+
+      <!-- TAB: USERS -->
+      <div id="tab-users" class="admin-tab-content">
+        <div class="card">
+          <div class="section-heading" style="font-size:18px;margin-bottom:18px">
+            <small>Hệ thống</small>
+            Danh sách người dùng
+          </div>
           <div id="adminUsersList" class="stack"></div>
-        </article>
-      </section>
-    </div>
+        </div>
+      </div>
 
-    <!-- TAB: REVIEWS -->
-    <div id="tab-reviews" class="admin-tab-content" style="display: none;">
-      <section class="admin-layout">
-        <article class="panel-card">
-          <h2>Danh sách đánh giá</h2>
+      <!-- TAB: REVIEWS -->
+      <div id="tab-reviews" class="admin-tab-content">
+        <div class="card">
+          <div class="section-heading" style="font-size:18px;margin-bottom:18px">
+            <small>Cộng đồng</small>
+            Tất cả đánh giá
+          </div>
           <div id="adminReviewsList" class="stack"></div>
-        </article>
-      </section>
-    </div>
+        </div>
+      </div>
 
-    <!-- TAB: BUILDS -->
-    <div id="tab-builds" class="admin-tab-content" style="display: none;">
-      <section class="admin-layout">
-        <article class="panel-card">
-          <h2>Danh sách build</h2>
+      <!-- TAB: BUILDS -->
+      <div id="tab-builds" class="admin-tab-content">
+        <div class="card">
+          <div class="section-heading" style="font-size:18px;margin-bottom:18px">
+            <small>Cấu hình</small>
+            Tất cả build
+          </div>
           <div id="adminBuildsList" class="stack"></div>
-        </article>
-      </section>
+        </div>
+      </div>
+
     </div>
-
-
   </main>
+
   <div id="footer-placeholder"></div>
-  <script src="/assets/js/app.js"></script>
+  <div id="toast-container"></div>
+  <script src="../assets/js/app.js"></script>
 </body>
 </html>

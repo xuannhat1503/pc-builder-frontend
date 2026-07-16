@@ -143,12 +143,9 @@ function componentCreatePayload(type) {
 }
 
 function resolveApiBase() {
-  // Kiểm tra nếu đang chạy trên Vercel (không phải localhost)
-  if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-    return 'https://pc-builder-backend-gklg.onrender.com/api'; 
-  }
-  
-  // Mặc định cho môi trường local
+  if (window.PC_API_BASE) return String(window.PC_API_BASE).replace(/\/$/, '');
+  if (location.protocol === 'file:') return 'http://localhost:8080/api';
+  if (location.port === '8080') return `${location.origin}/api`;
   return 'http://localhost:8080/api';
 }
 
@@ -198,19 +195,21 @@ function pageName() {
 }
 
 function prefix() {
-
-  return '/';
+  const pathname = location.pathname.replace(/\\/g, '/');
+  if (pathname.includes('/frontend/pages/')) return '../';
+  return '/frontend/';
 }
+
 function pageHref(page, query = '') {
   const map = {
-    home: `/index.html`,
-    auth: `/pages/auth.html`,
-    catalog: `/pages/catalog.html`,
-    detail: `/pages/detail.html`,
-    workspace: `/pages/workspace.html`,
-    compare: `/pages/compare.html`,
-    account: `/pages/account.html`,
-    admin: `/pages/admin.html`
+    home: `${prefix()}index.html`,
+    auth: `${prefix()}pages/auth.html`,
+    catalog: `${prefix()}pages/catalog.html`,
+    detail: `${prefix()}pages/detail.html`,
+    workspace: `${prefix()}pages/workspace.html`,
+    compare: `${prefix()}pages/compare.html`,
+    account: `${prefix()}pages/account.html`,
+    admin: `${prefix()}pages/admin.html`
   };
   return `${map[page] || map.home}${query}`;
 }
@@ -258,13 +257,12 @@ async function loadShell() {
   const headerTarget = byId('header-placeholder');
   const footerTarget = byId('footer-placeholder');
 
-  // Đảm bảo đường dẫn này khớp với cấu trúc thư mục thực tế trên Vercel
-  // Nếu file đang ở /components/header.html, hãy bỏ chữ /frontend đi
   await Promise.all([
-    headerTarget ? fetch(`/components/header.html`).then(r => r.text()).then(html => headerTarget.innerHTML = html) : Promise.resolve(),
-    footerTarget ? fetch(`/components/footer.html`).then(r => r.text()).then(html => footerTarget.innerHTML = html) : Promise.resolve()
+    headerTarget ? fetch(`${prefix()}components/header.html`).then((response) => response.text()).then((html) => { headerTarget.innerHTML = html; }) : Promise.resolve(),
+    footerTarget ? fetch(`${prefix()}components/footer.html`).then((response) => response.text()).then((html) => { footerTarget.innerHTML = html; }) : Promise.resolve()
   ]);
 }
+
 function componentTypeToLabel(type) {
   return componentMeta[type]?.label || type.toUpperCase();
 }
@@ -318,7 +316,7 @@ function drawPriceChart(canvas, points) {
   ctx.scale(ratio, ratio);
 
   ctx.clearRect(0, 0, width, height);
-  ctx.fillStyle = '#f8fff9';
+  ctx.fillStyle = '#f8f9fb';
   ctx.fillRect(0, 0, width, height);
 
   if (!points.length) {
@@ -336,7 +334,7 @@ function drawPriceChart(canvas, points) {
   const xStep = points.length === 1 ? 0 : drawWidth / (points.length - 1);
   const projectY = (value) => padding.top + drawHeight - ((value - minValue) / spread) * drawHeight;
 
-  ctx.strokeStyle = '#cfe8d4';
+  ctx.strokeStyle = '#e2e8f0';
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(padding.left, padding.top);
@@ -344,13 +342,13 @@ function drawPriceChart(canvas, points) {
   ctx.lineTo(padding.left + drawWidth, padding.top + drawHeight);
   ctx.stroke();
 
-  ctx.fillStyle = '#61806a';
-  ctx.font = '12px Segoe UI, Tahoma, sans-serif';
-  ctx.fillText(money(maxValue), 10, padding.top + 6);
-  ctx.fillText(money(minValue), 10, padding.top + drawHeight);
+  ctx.fillStyle = '#6b7a8d';
+  ctx.font = '11px Inter, Segoe UI, sans-serif';
+  ctx.fillText(money(maxValue), 4, padding.top + 6);
+  ctx.fillText(money(minValue), 4, padding.top + drawHeight);
 
-  ctx.strokeStyle = '#1f9d4c';
-  ctx.lineWidth = 3;
+  ctx.strokeStyle = '#c0392b';
+  ctx.lineWidth = 2.5;
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';
   ctx.beginPath();
@@ -366,9 +364,13 @@ function drawPriceChart(canvas, points) {
   points.forEach((point, index) => {
     const x = padding.left + (points.length === 1 ? drawWidth / 2 : index * xStep);
     const y = projectY(Number(point.priceValue || 0));
-    ctx.fillStyle = '#1f9d4c';
+    ctx.fillStyle = '#c0392b';
     ctx.beginPath();
     ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(x, y, 2, 0, Math.PI * 2);
     ctx.fill();
   });
 }
@@ -411,64 +413,59 @@ function currentUserLabel() {
 function syncHeader() {
   const userMenu = byId('userMenu');
   if (!userMenu) return;
-  
+
   if (state.currentUser) {
     const email = currentUserLabel();
+    const initial = email.charAt(0).toUpperCase();
     userMenu.innerHTML = `
-      <div style="position: relative; display: flex; align-items: center;">
-        <a class="header-state" href="javascript:void(0)" id="userMenuBtn" style="cursor: pointer; margin-right: 10px;">${escapeHtml(email)}</a>
-        <div id="userMenuDropdown" class="user-menu-dropdown" style="display:none; position: absolute; top: 100%; left: 0; background: white; border: 1px solid #ddd; border-radius: 4px; min-width: 150px; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-          <a href="${pageHref('account')}" style="display: block; padding: 10px 15px; text-decoration: none; color: #333; border-bottom: 1px solid #eee;">T\u00e0i kho\u1ea3n</a>
-          <a href="javascript:void(0)" id="logoutBtn" style="display: block; padding: 10px 15px; text-decoration: none; color: #d32f2f; cursor: pointer;">Đăng xuất</a>
+      <div class="user-dropdown-wrap">
+        <button class="header-state" id="userMenuBtn" type="button"
+          style="display:flex;align-items:center;gap:8px;cursor:pointer;border:1.5px solid var(--border-2);background:var(--white);color:var(--navy);padding:7px 14px;border-radius:99px;font-size:13px;font-weight:600;transition:all .2s">
+          <span style="width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${escapeHtml(initial)}</span>
+          <span style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(email)}</span>
+          <span style="font-size:10px;color:var(--text-3)">▾</span>
+        </button>
+        <div id="userMenuDropdown" class="user-menu-dropdown" style="display:none">
+          <a href="${pageHref('account')}">👤 Tài khoản</a>
+          <hr/>
+          <button id="logoutBtn" class="danger" type="button">🚪 Đăng xuất</button>
         </div>
       </div>
     `;
-    
+
     const userMenuBtn = byId('userMenuBtn');
-    const dropdown = byId('userMenuDropdown');
-    const logoutBtn = byId('logoutBtn');
-    
+    const dropdown    = byId('userMenuDropdown');
+    const logoutBtn   = byId('logoutBtn');
+
     userMenuBtn?.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault(); e.stopPropagation();
       dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
     });
-    
+
     logoutBtn?.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+      e.preventDefault(); e.stopPropagation();
       localStorage.removeItem(STORAGE_KEYS.currentUserId);
       state.currentUser = null;
       syncHeader();
       location.href = pageHref('home');
     });
-    
+
     document.addEventListener('click', (e) => {
-      if (userMenuBtn && dropdown && !userMenuBtn.contains(e.target) && !dropdown.contains(e.target)) {
+      if (userMenuBtn && dropdown &&
+          !userMenuBtn.contains(e.target) && !dropdown.contains(e.target)) {
         dropdown.style.display = 'none';
       }
-    });
+    }, { once: false });
+
   } else {
-    userMenu.innerHTML = `<a class="header-state" href="${pageHref('auth')}" style="margin: 0;">Đăng nhập</a>`;
+    userMenu.innerHTML = `<a class="header-state" href="${pageHref('auth')}">Đăng nhập</a>`;
   }
-  
-  // Hiển thị "Quản lý" cho admin, còn "So sánh" luôn bật cho mọi vai trò
+
   const navCompare = byId('navCompare');
-  const navAdmin = byId('navAdmin');
-  if (state.currentUser) {
-    const role = String(state.currentUser.role || 'USER').toUpperCase();
-    if (role === 'ADMIN') {
-      if (navCompare) navCompare.style.display = 'inline-block';
-      if (navAdmin) navAdmin.style.display = 'inline-block';
-    } else {
-      if (navCompare) navCompare.style.display = 'inline-block';
-      if (navAdmin) navAdmin.style.display = 'none';
-    }
-  } else {
-    if (navCompare) navCompare.style.display = 'inline-block';
-    if (navAdmin) navAdmin.style.display = 'none';
-  }
-  
+  const navAdmin   = byId('navAdmin');
+  if (navCompare) navCompare.style.display = 'inline-flex';
+  if (navAdmin)   navAdmin.style.display   = (state.currentUser && String(state.currentUser.role || '').toUpperCase() === 'ADMIN') ? 'inline-flex' : 'none';
+
   document.querySelectorAll('[data-nav]').forEach((link) => {
     link.classList.toggle('active', link.dataset.nav === pageName());
   });
@@ -524,74 +521,87 @@ function catalogItems() {
 }
 
 function renderHome() {
-  const grid = byId('homeScreenGrid');
-  if (!grid) return;
-  const firstDetailId = catalogItems()[0]?.id || 1;
-  const screens = [
-    { title: 'Đăng nhập / đăng ký', href: pageHref('auth'), desc: 'Quản lý tài khoản người dùng.' },
-    { title: 'Danh sách linh kiện', href: pageHref('catalog'), desc: 'Hiển thị giá thấp nhất từ nhiều nguồn.' },
-    { title: 'Chi tiết linh kiện', href: componentHref(firstDetailId), desc: 'Thông số, giá nhiều nguồn, đánh giá.' },
-    { title: 'Workspace', href: pageHref('workspace'), desc: 'Chọn linh kiện và chat với AI.' },
-    { title: 'So sánh linh kiện', href: pageHref('compare'), desc: 'Đối chiếu thông số kỹ thuật.' },
-    { title: 'Tài khoản & cấu hình', href: pageHref('account'), desc: 'Xem cấu hình đã lưu.' },
-    { title: 'Quản trị', href: pageHref('admin'), desc: 'Quản lý linh kiện, người dùng, review và build.' }
-  ];
-
-  grid.innerHTML = screens.map((screen) => `
-    <article class="screen-card">
-      <strong>${escapeHtml(screen.title)}</strong>
-      <span>${escapeHtml(screen.desc)}</span>
-      <a class="btn outline" href="${screen.href}">Mở màn hình</a>
-    </article>
-  `).join('');
+  // Fill live stats
+  const items = catalogItems();
+  const statComp  = byId('statComponents');
+  const statBld   = byId('statBuilds');
+  const statRev   = byId('statReviews');
+  const statSrc   = byId('statSources');
+  if (statComp) statComp.textContent = items.length || '—';
+  if (statBld)  statBld.textContent  = state.builds.length || '—';
+  if (statRev)  statRev.textContent  = state.reviews.length || '—';
+  if (statSrc)  statSrc.textContent  = state.sourceNames.length || '—';
+  // feature-grid is already static HTML in index.html — nothing to render
 }
 
 function renderCatalog() {
   const filters = byId('catalogFilters');
-  const search = byId('catalogSearch');
-  const grid = byId('catalogGrid');
-  const count = byId('catalogCount');
+  const search  = byId('catalogSearch');
+  const sortSel = byId('catalogSort');
+  const grid    = byId('catalogGrid');
+  const count   = byId('catalogCount');
   const cheapest = byId('catalogCheapest');
-  const items = catalogItems();
+  const items   = catalogItems();
   let activeType = 'all';
 
   function draw() {
     const keyword = (search?.value || '').trim().toLowerCase();
-    const visible = items.filter((item) => (activeType === 'all' || item.type === activeType) && [item.name, item.brand, item.description, item.type].join(' ').toLowerCase().includes(keyword));
+    const sortVal = sortSel?.value || 'default';
+
+    let visible = items.filter((item) =>
+      (activeType === 'all' || item.type === activeType) &&
+      [item.name, item.brand, item.description, item.type].join(' ').toLowerCase().includes(keyword)
+    );
+
+    if (sortVal === 'price-asc')  visible = [...visible].sort((a, b) => a.lowestPrice - b.lowestPrice);
+    if (sortVal === 'price-desc') visible = [...visible].sort((a, b) => b.lowestPrice - a.lowestPrice);
+    if (sortVal === 'name-asc')   visible = [...visible].sort((a, b) => a.name.localeCompare(b.name));
+
     if (count) count.textContent = `${visible.length} linh kiện`;
     if (cheapest) {
       const top = visible.reduce((best, item) => (!best || item.lowestPrice < best.lowestPrice ? item : best), null);
-      cheapest.textContent = top ? `${top.name} - ${money(top.lowestPrice)}` : 'Không có dữ liệu';
+      cheapest.textContent = top && top.lowestPrice ? `Rẻ nhất: ${top.name} — ${money(top.lowestPrice)}` : '';
     }
+
     if (grid) {
-      grid.innerHTML = visible.map((item) => `
-        <article class="product-card">
+      grid.innerHTML = visible.length ? visible.map((item) => `
+        <article class="product-card" onclick="location.href='${componentHref(item.id)}'">
           <div class="product-top">
             <span class="pill">${escapeHtml(componentTypeToLabel(item.type))}</span>
-            <span class="price">${money(item.lowestPrice)}</span>
+            <span class="price">${item.lowestPrice ? money(item.lowestPrice) : '—'}</span>
           </div>
           <h3>${escapeHtml(item.name)}</h3>
-          <p class="muted">${escapeHtml(item.description)}</p>
-          <div class="card-meta">${escapeHtml(item.brand)} • ${escapeHtml(item.lowestSource)}</div>
-          <a class="btn outline" href="${componentHref(item.id)}">Xem chi tiết</a>
+          <p class="muted">${escapeHtml(item.brand || '—')}</p>
+          <div class="card-meta" style="margin-top:auto;padding-top:8px;border-top:1px solid var(--border)">
+            ${item.lowestSource ? `📍 ${escapeHtml(item.lowestSource)}` : ''}
+          </div>
+          <a class="btn outline btn-sm" href="${componentHref(item.id)}" onclick="event.stopPropagation()">Xem chi tiết</a>
         </article>
-      `).join('') || '<div class="empty">Không tìm thấy linh kiện phù hợp.</div>';
+      `).join('') : '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔍</div><span>Không tìm thấy linh kiện phù hợp.</span></div>';
     }
   }
 
   if (filters) {
     const filterList = ['all', 'cpu', 'mainboard', 'ram', 'gpu', 'psu'];
-    filters.innerHTML = filterList.map((type) => `<button type="button" class="chip ${type === 'all' ? 'active' : ''}" data-filter="${type}">${escapeHtml(type === 'all' ? 'Tất cả' : componentTypeToLabel(type))}</button>`).join('');
+    filters.innerHTML = filterList.map((type) =>
+      `<button type="button" class="chip ${type === 'all' ? 'active' : ''}" data-filter="${type}">${
+        escapeHtml(type === 'all' ? 'Tất cả' : componentTypeToLabel(type))
+      }</button>`
+    ).join('');
+
     filters.addEventListener('click', (event) => {
       const button = event.target.closest('[data-filter]');
       if (!button) return;
       activeType = button.dataset.filter;
-      filters.querySelectorAll('.chip').forEach((chip) => chip.classList.toggle('active', chip.dataset.filter === activeType));
+      filters.querySelectorAll('.chip').forEach((chip) =>
+        chip.classList.toggle('active', chip.dataset.filter === activeType)
+      );
       draw();
     });
   }
 
   search?.addEventListener('input', draw);
+  sortSel?.addEventListener('change', draw);
   draw();
 }
 
@@ -614,14 +624,28 @@ function renderDetail() {
   byId('detailVisualTitle').textContent = item.name;
   byId('detailVisualSubtitle').textContent = `${item.brand} • ${componentTypeToLabel(item.type)}`;
 
-  byId('detailSpecs').innerHTML = Object.entries(item.specs).map(([key, value]) => `<div class="spec-row"><span>${escapeHtml(key)}</span><strong>${escapeHtml(value)}</strong></div>`).join('') || '<div class="empty">Chưa có thông số.</div>';
-  byId('detailPrices').innerHTML = history.map((price) => `
-    <div class="stack-item">
-      <strong>${escapeHtml(price.sourceName)}</strong>
-      <div>${money(price.priceValue)}</div>
-      <div class="muted">${escapeHtml(formatDateTime(price.crawledAt) || 'Không rõ thời gian')}</div>
-    </div>
-  `).join('') || '<div class="empty">Chưa có dữ liệu giá.</div>';
+  byId('detailSpecs').innerHTML = Object.entries(item.specs).map(([key, value]) => `
+    <div class="spec-row"><span>${escapeHtml(key)}</span><strong>${escapeHtml(value)}</strong></div>
+  `).join('') || '<div class="empty"><div class="empty-icon">📐</div><span>Chưa có thông số.</span></div>';
+
+  // Render prices as price-source-item cards
+  const cheapestSource = item.lowestSource;
+  byId('detailPrices').innerHTML = history.length ? history.map((price) => {
+    const isCheapest = price.sourceName === cheapestSource;
+    return `
+      <div class="price-source-item${isCheapest ? ' cheapest' : ''}">
+        <div>
+          <div class="source-name">${escapeHtml(price.sourceName)}${isCheapest ? ' <span class="badge badge-green" style="font-size:10px">Rẻ nhất</span>' : ''}</div>
+          <div class="source-time">${escapeHtml(formatDateTime(price.crawledAt) || 'Không rõ thời gian')}</div>
+        </div>
+        <span class="source-price">${money(price.priceValue)}</span>
+      </div>`;
+  }).join('') : '<div class="empty"><div class="empty-icon">💰</div><span>Chưa có dữ liệu giá.</span></div>';
+
+  // Set breadcrumb & visual chip
+  if (byId('detailBreadcrumb')) byId('detailBreadcrumb').textContent = item.name;
+  if (byId('detailVisualChip')) byId('detailVisualChip').textContent = componentTypeToLabel(item.type);
+  if (byId('detailBadge')) byId('detailBadge').innerHTML = `<span class="badge badge-ice">${escapeHtml(componentTypeToLabel(item.type))}</span>`;
 
   const chart = byId('priceChart');
   const chartEmpty = byId('priceChartEmpty');
@@ -634,36 +658,41 @@ function renderDetail() {
 
   const reviews = state.reviews.filter((review) => Number(review.component?.id || review.componentId) === Number(item.id));
   byId('detailReviews').innerHTML = reviews.length ? reviews.map((review) => `
-    <article class="review-item">
-      <strong>${escapeHtml(review.user?.email || review.user?.name || 'Người dùng')}</strong>
-      <span>${'★'.repeat(Number(review.ratingStar || review.rating || 0))}</span>
-      <p>${escapeHtml(review.commentText || review.comment || '')}</p>
-    </article>
-  `).join('') : '<div class="empty">Chưa có đánh giá.</div>';
+    <div class="review-item">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+        <span class="review-author">${escapeHtml(review.user?.email || review.user?.name || 'Người dùng')}</span>
+        <span class="review-stars">${'★'.repeat(Number(review.ratingStar || review.rating || 0))}${'☆'.repeat(Math.max(0, 5 - Number(review.ratingStar || review.rating || 0)))}</span>
+      </div>
+      <p class="review-text">${escapeHtml(review.commentText || review.comment || '')}</p>
+    </div>
+  `).join('') : '<div class="empty"><div class="empty-icon">⭐</div><span>Chưa có đánh giá.</span></div>';
+
+  // Show/hide review form based on login state
+  const reviewFormWrap   = byId('reviewFormWrap');
+  const reviewLoginPrompt = byId('reviewLoginPrompt');
+  if (reviewFormWrap)    reviewFormWrap.style.display   = state.currentUser ? 'flex' : 'none';
+  if (reviewLoginPrompt) reviewLoginPrompt.style.display = state.currentUser ? 'none' : 'block';
 
   byId('submitReviewBtn')?.addEventListener('click', async () => {
-    if (!state.currentUser) {
-      alert('Hãy đăng nhập trước khi đánh giá.');
-      return;
-    }
+    if (!state.currentUser) return;
     const commentText = byId('reviewText')?.value.trim();
-    if (!commentText) return;
+    if (!commentText) { showToast('Vui lòng nhập nội dung đánh giá.', 'error'); return; }
+    const btn = byId('submitReviewBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Đang gửi...'; }
     try {
       await requestJson('/reviews', {
         method: 'POST',
-        body: JSON.stringify({
-          userId: state.currentUser.id,
-          componentId: item.id,
-          ratingStar: 5,
-          commentText
-        })
+        body: JSON.stringify({ userId: state.currentUser.id, componentId: item.id, ratingStar: 5, commentText })
       });
       byId('reviewText').value = '';
+      showToast('Đã gửi đánh giá thành công!', 'success');
       await loadBackendData();
       renderDetail();
       syncHeader();
     } catch (error) {
-      alert(`Không thể gửi đánh giá: ${error.message}`);
+      showToast(`Không thể gửi đánh giá: ${error.message}`, 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Gửi đánh giá'; }
     }
   });
 }
@@ -694,16 +723,38 @@ function workspaceComponentsFromSelection(selection) {
 }
 
 function renderWorkspaceSummary(report) {
-  const summary = byId('workspaceSummary');
-  const result = byId('workspaceResult');
+  const summary     = byId('workspaceSummary');
+  const result      = byId('workspaceResult');
+  const summaryCard = byId('workspaceSummaryCard');
+
   if (summary) {
-    summary.innerHTML = report.components.map((item) => `<div class="stack-item"><strong>${escapeHtml(item.name)}</strong><span>${money(item.lowestPrice)}</span></div>`).join('');
+    summary.innerHTML = report.components.map((item) => `
+      <div class="stack-item" style="display:flex;justify-content:space-between;align-items:center">
+        <strong>${escapeHtml(item.name)}</strong>
+        <span style="font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--crimson)">${money(item.lowestPrice)}</span>
+      </div>`).join('');
+    if (summaryCard) summaryCard.style.display = report.components.length ? 'block' : 'none';
   }
+
   if (result) {
+    if (!report.components.length) {
+      result.innerHTML = '';
+      return;
+    }
     if (report.compatible) {
-      result.innerHTML = `<div class="notice">Cấu hình phù hợp. Tổng chi phí: <strong>${money(report.totalPrice)}</strong>.</div>`;
+      result.innerHTML = `
+        <div class="notice" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+          <span>✅ Cấu hình <strong>tương thích</strong></span>
+          <span style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--navy)">Tổng: ${money(report.totalPrice)}</span>
+        </div>`;
     } else {
-      result.innerHTML = `<div class="notice">Cần điều chỉnh cấu hình. ${(report.issues || []).map((item) => escapeHtml(item.message || item)).join(' | ')}</div>`;
+      const issues = (report.issues || []).map((item) =>
+        `<li style="margin-top:6px">⚠️ ${escapeHtml(item.message || item)}</li>`).join('');
+      result.innerHTML = `
+        <div class="notice error">
+          <strong>Cần điều chỉnh cấu hình</strong>
+          <ul style="padding-left:4px;margin-top:6px;list-style:none">${issues}</ul>
+        </div>`;
     }
   }
 }
@@ -822,16 +873,113 @@ function renderFloatingAssistantLines(container) {
   if (!container) return;
   const lines = state.chat;
   if (!lines.length) {
-    container.innerHTML = '<div class="empty">Xin chao, toi co the goi y cau hinh va gia linh kien cho ban.</div>';
+    container.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:8px;text-align:center;padding:20px;color:var(--text-3)">
+        <span style="font-size:32px;opacity:.25">🤖</span>
+        <span style="font-size:13px;font-weight:600">Xin chào! Tôi có thể gợi ý cấu hình và giá linh kiện cho bạn.</span>
+      </div>`;
     return;
   }
 
   container.innerHTML = lines.map((item) => `
     <div class="chat-line ${item.role}">
-      <strong>${item.role === 'assistant' ? 'AI' : 'Ban'}:</strong> ${escapeHtml(item.message)}
+      <div class="chat-avatar-sm">${item.role === 'assistant' ? '🤖' : '👤'}</div>
+      <div class="chat-bubble">${escapeHtml(item.message)}</div>
     </div>
   `).join('');
   container.scrollTop = container.scrollHeight;
+}
+
+// ── TOAST HELPER ──
+function showToast(message, type = 'info') {
+  const container = byId('toast-container');
+  if (!container) return;
+  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span class="toast-icon">${icons[type] || icons.info}</span><span>${escapeHtml(message)}</span>`;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.classList.add('toast-out');
+    setTimeout(() => el.remove(), 220);
+  }, 3000);
+}
+
+// ── MODAL HELPER ──
+function showModal({ title, body, confirmLabel = 'Xác nhận', cancelLabel = 'Hủy', onConfirm, danger = false }) {
+  const existing = byId('_dynamicModal');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = '_dynamicModal';
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal" style="max-width:440px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div class="modal-title">${escapeHtml(title)}</div>
+        <button id="_modalClose" style="background:none;border:none;font-size:18px;color:var(--text-3);cursor:pointer;line-height:1;padding:0">✕</button>
+      </div>
+      <div style="font-size:14px;color:var(--text-2);line-height:1.6">${body}</div>
+      <div class="modal-footer">
+        <button id="_modalCancel" class="btn outline">${escapeHtml(cancelLabel)}</button>
+        <button id="_modalConfirm" class="btn ${danger ? 'crimson' : 'primary'}">${escapeHtml(confirmLabel)}</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const close = () => overlay.remove();
+  byId('_modalClose')?.addEventListener('click', close);
+  byId('_modalCancel')?.addEventListener('click', close);
+  byId('_modalConfirm')?.addEventListener('click', () => { close(); onConfirm?.(); });
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+}
+
+// ── INPUT MODAL HELPER ──
+function showInputModal({ title, fields, confirmLabel = 'Lưu', onConfirm }) {
+  const existing = byId('_dynamicModal');
+  if (existing) existing.remove();
+
+  const fieldHtml = fields.map((f) => `
+    <label style="display:grid;gap:6px;font-size:13px;font-weight:600;color:var(--text-3)">
+      <span style="font-size:11px;text-transform:uppercase;letter-spacing:.07em">${escapeHtml(f.label)}</span>
+      ${f.type === 'textarea'
+        ? `<textarea id="_mf_${f.key}" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;resize:vertical;min-height:80px;font-family:inherit">${escapeHtml(f.value || '')}</textarea>`
+        : `<input id="_mf_${f.key}" type="${f.type || 'text'}" value="${escapeHtml(f.value || '')}" placeholder="${escapeHtml(f.placeholder || '')}" style="padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;width:100%" />`
+      }
+    </label>
+  `).join('');
+
+  const overlay = document.createElement('div');
+  overlay.id = '_dynamicModal';
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div class="modal-title">${escapeHtml(title)}</div>
+        <button id="_modalClose" style="background:none;border:none;font-size:18px;color:var(--text-3);cursor:pointer;line-height:1;padding:0">✕</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">${fieldHtml}</div>
+      <div class="modal-footer">
+        <button id="_modalCancel" class="btn outline">Hủy</button>
+        <button id="_modalConfirm" class="btn primary">${escapeHtml(confirmLabel)}</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const close = () => overlay.remove();
+  byId('_modalClose')?.addEventListener('click', close);
+  byId('_modalCancel')?.addEventListener('click', close);
+  byId('_modalConfirm')?.addEventListener('click', () => {
+    const values = {};
+    fields.forEach((f) => {
+      values[f.key] = byId(`_mf_${f.key}`)?.value || '';
+    });
+    close();
+    onConfirm?.(values);
+  });
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
 }
 
 function addChatMessage(role, message) {
@@ -971,31 +1119,38 @@ function initFloatingAssistant() {
   const wrapper = document.createElement('div');
   wrapper.id = 'assistantFloatRoot';
   wrapper.innerHTML = `
-    <button id="assistantFloatToggle" class="assistant-float-toggle" type="button" aria-expanded="false">AI</button>
+    <button id="assistantFloatToggle" class="assistant-float-toggle" type="button" aria-expanded="false" title="Trợ lý AI">🤖</button>
     <section id="assistantFloatPanel" class="assistant-float-panel" aria-hidden="true">
       <header class="assistant-float-header">
-        <strong>Tro ly AI</strong>
+        <div class="chat-avatar">🤖</div>
+        <div class="chat-header-info">
+          <div class="chat-header-name">Trợ lý AI</div>
+          <div class="chat-header-status">Sẵn sàng hỗ trợ</div>
+        </div>
         <div class="assistant-float-actions">
-          <button id="assistantFloatClear" class="assistant-float-clear" type="button">Clear chat</button>
-          <button id="assistantFloatClose" class="assistant-float-close" type="button" aria-label="Dong chat">x</button>
+          <button id="assistantFloatClear" class="assistant-float-clear" type="button" title="Xóa chat">↺</button>
+          <button id="assistantFloatClose" class="assistant-float-close" type="button" aria-label="Đóng chat">✕</button>
         </div>
       </header>
       <div id="assistantFloatMessages" class="assistant-float-messages"></div>
       <div class="assistant-float-compose">
         <div class="assistant-float-context">
-          <label>Nguon phan tich
+          <label>Nguồn phân tích
             <select id="assistantFloatContextMode">
-              <option value="workspace">Workspace hien tai</option>
-              <option value="build">Build da luu cua toi</option>
+              <option value="workspace">Workspace hiện tại</option>
+              <option value="build">Build đã lưu của tôi</option>
             </select>
           </label>
-          <label id="assistantFloatBuildWrap" style="display: none;">Chon build
+          <label id="assistantFloatBuildWrap" style="display:none">Chọn build
             <select id="assistantFloatBuild"></select>
           </label>
-          <div id="assistantFloatBuildPreview" class="assistant-build-preview" style="display: none;"></div>
+          <div id="assistantFloatBuildPreview" class="assistant-build-preview" style="display:none"></div>
         </div>
-        <textarea id="assistantFloatInput" placeholder="Hoi ve cau hinh, gia, tuong thich..." rows="2"></textarea>
-        <button id="assistantFloatSend" class="button primary" type="button">Gui</button>
+        <div class="compose-inner">
+          <textarea id="assistantFloatInput" placeholder="Hỏi về cấu hình, giá, tương thích..." rows="2"
+            style="flex:1;background:none;border:none;outline:none;font-size:13px;color:var(--text);resize:none;max-height:90px;line-height:1.5;padding:2px 0;font-family:inherit"></textarea>
+          <button id="assistantFloatSend" class="chat-send-btn" type="button">➤</button>
+        </div>
       </div>
     </section>
   `;
@@ -1216,7 +1371,8 @@ async function renderWorkspace() {
 
   Object.entries(selects).forEach(([type, select]) => {
     if (!select) return;
-    select.innerHTML = groups[type].map((item) => `<option value="${item.id}">${escapeHtml(item.name)} - ${money(item.lowestPrice)}</option>`).join('');
+    select.innerHTML = `<option value="">-- Chọn ${type.toUpperCase()} --</option>` +
+      groups[type].map((item) => `<option value="${item.id}">${escapeHtml(item.name)} — ${money(item.lowestPrice)}</option>`).join('');
     const saved = state.workspace[type] || groups[type][0]?.id || '';
     select.value = String(saved);
     state.workspace[type] = Number(select.value || 0);
@@ -1227,17 +1383,124 @@ async function renderWorkspace() {
   });
 
   async function updateWorkspace() {
-    const report = await checkWorkspaceCompatibility();
-    renderWorkspaceSummary({
-      components: workspaceComponentsFromSelection(workspaceSelectionFromUI()),
-      compatible: Boolean(report.compatible),
-      totalPrice: Number(report.totalPrice || 0),
-      issues: report.issues || []
-    });
+    const btn = byId('checkCompatibilityBtn');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang kiểm tra...'; }
+    try {
+      const report = await checkWorkspaceCompatibility();
+      renderWorkspaceSummary({
+        components: workspaceComponentsFromSelection(workspaceSelectionFromUI()),
+        compatible: Boolean(report.compatible),
+        totalPrice: Number(report.totalPrice || 0),
+        issues: report.issues || []
+      });
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '🔍 Kiểm tra tương thích'; }
+    }
   }
 
   byId('checkCompatibilityBtn')?.addEventListener('click', updateWorkspace);
-  renderWorkspaceSummary({ components: workspaceComponentsFromSelection(workspaceSelectionFromUI()), compatible: true, totalPrice: workspaceComponentsFromSelection(workspaceSelectionFromUI()).reduce((sum, item) => sum + item.lowestPrice, 0), issues: [] });
+
+  // Save build button on workspace page
+  byId('saveWorkspaceBuildBtn')?.addEventListener('click', async () => {
+    if (!state.currentUser) {
+      showToast('Hãy đăng nhập trước khi lưu cấu hình.', 'error'); return;
+    }
+    const btn = byId('saveWorkspaceBuildBtn');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang lưu...'; }
+    try {
+      await createBackendBuild(state.workspace);
+      showToast('Đã lưu cấu hình thành công!', 'success');
+    } catch (error) {
+      showToast(`Không thể lưu cấu hình: ${error.message}`, 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '💾 Lưu cấu hình'; }
+    }
+  });
+
+  // Wire inline workspace chat
+  const chatList  = byId('chatMessages');
+  const chatInput = byId('chatInput');
+  const sendBtn   = byId('sendChatBtn');
+  const clearBtn  = byId('wsClearChatBtn');
+
+  function renderWsChat() {
+    if (!chatList) return;
+    if (!state.chat.length) {
+      chatList.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;text-align:center;padding:24px;color:var(--text-3)">
+          <span style="font-size:36px;opacity:.25">🤖</span>
+          <span style="font-size:14px;font-weight:600">AI tư vấn cấu hình PC</span>
+          <span style="font-size:13px">Chọn linh kiện rồi đặt câu hỏi bất kỳ</span>
+        </div>`;
+      return;
+    }
+    chatList.innerHTML = state.chat.map((item) => `
+      <div class="chat-line ${item.role}">
+        <div class="chat-avatar-sm">${item.role === 'assistant' ? '🤖' : '👤'}</div>
+        <div class="chat-bubble">${escapeHtml(item.message)}</div>
+      </div>`).join('');
+    chatList.scrollTop = chatList.scrollHeight;
+  }
+
+  async function sendWsChat(text) {
+    const message = (text || chatInput?.value || '').trim();
+    if (!message) return;
+    const components = workspaceComponentsFromSelection(workspaceSelectionFromUI());
+    if (!components.length) {
+      showToast('Chọn ít nhất một linh kiện trước khi hỏi AI.', 'error');
+      return;
+    }
+    addChatMessage('user', message);
+    if (chatInput) chatInput.value = '';
+    renderWsChat();
+    if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = '⏳'; }
+    try {
+      const report = await checkWorkspaceCompatibility().catch(() => ({ totalPrice: 0 }));
+      const response = await requestJson('/assistant/analyze', {
+        method: 'POST',
+        body: JSON.stringify({
+          message,
+          componentId: components[0]?.id || null,
+          budget: Number(report?.totalPrice || components.reduce((s, i) => s + i.lowestPrice, 0)),
+          useCase: message,
+          compatibilityComponents: components.map((i) => ({ componentId: i.id, quantity: 1 })),
+          conversationContext: buildConversationContext()
+        })
+      });
+      addChatMessage('assistant', formatAssistantMessage(response.answer || 'AI chưa trả lời được.'));
+    } catch (error) {
+      addChatMessage('assistant', `Không gọi được AI: ${error.message}`);
+    } finally {
+      if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = '➤'; }
+    }
+    renderWsChat();
+  }
+
+  sendBtn?.addEventListener('click', () => sendWsChat());
+  chatInput?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendWsChat(); }
+  });
+  clearBtn?.addEventListener('click', () => {
+    state.chat = [];
+    saveJSON(STORAGE_KEYS.chat, state.chat);
+    renderWsChat();
+  });
+
+  // Hint chips
+  document.querySelectorAll('.ws-hint').forEach((chip) => {
+    chip.addEventListener('click', () => sendWsChat(chip.textContent.trim()));
+  });
+
+  renderWsChat();
+
+  // Initial summary
+  const initComponents = workspaceComponentsFromSelection(workspaceSelectionFromUI());
+  renderWorkspaceSummary({
+    components: initComponents,
+    compatible: true,
+    totalPrice: initComponents.reduce((sum, item) => sum + item.lowestPrice, 0),
+    issues: []
+  });
 }
 
 function renderCompare() {
@@ -1322,16 +1585,34 @@ async function createBackendBuild(selection, report) {
 }
 
 async function renderAccount() {
-  const userBox = byId('accountUser');
-  const buildsBox = byId('savedBuilds');
+  const guestBox   = byId('accountGuest');
+  const contentBox = byId('accountContent');
+  const buildsBox  = byId('savedBuilds');
   const reviewsBox = byId('myReviews');
-  const saveBtn = byId('saveWorkspaceBuildBtn');
+  const saveBtn    = byId('saveWorkspaceBuildBtn');
 
-  if (userBox) {
-    userBox.innerHTML = state.currentUser
-      ? `<div class="stack-item"><strong>${escapeHtml(state.currentUser.email)}</strong><div>Vai trò: ${escapeHtml(state.currentUser.role)}</div></div>`
-      : '<div class="empty">Chọn tài khoản ở trang đăng nhập để lưu cấu hình.</div>';
+  // Show/hide based on login state
+  if (guestBox)   guestBox.style.display   = state.currentUser ? 'none' : 'block';
+  if (contentBox) contentBox.style.display = state.currentUser ? 'block' : 'none';
+
+  // Populate profile header
+  if (state.currentUser) {
+    const initial = (state.currentUser.email || '?').charAt(0).toUpperCase();
+    const avatarEl = byId('accountAvatarInitial');
+    const nameEl   = byId('accountName');
+    const emailEl  = byId('accountEmailDisplay');
+    const roleEl   = byId('accountRoleBadge');
+    if (avatarEl) avatarEl.textContent = initial;
+    if (nameEl)   nameEl.textContent   = state.currentUser.email || '—';
+    if (emailEl)  emailEl.textContent  = state.currentUser.email || '—';
+    if (roleEl) {
+      roleEl.textContent = String(state.currentUser.role || 'USER').toUpperCase();
+      roleEl.className = String(state.currentUser.role || '').toUpperCase() === 'ADMIN'
+        ? 'badge badge-navy' : 'badge badge-ice';
+    }
   }
+
+  const userBox = null; // legacy ref, replaced above
 
   const userBuilds = state.currentUser ? await getJson(`/builds/user/${state.currentUser.id}`, []) : [];
   const buildDetailsMap = new Map();
@@ -1339,68 +1620,83 @@ async function renderAccount() {
     buildDetailsMap.set(Number(build.id), await loadBuildDetails(build.id));
   }));
 
+  const buildsCountLabel = byId('buildsCountLabel');
+  if (buildsCountLabel) buildsCountLabel.textContent = `${userBuilds.length} cấu hình đã lưu`;
+
   if (buildsBox) {
     buildsBox.innerHTML = userBuilds.length ? userBuilds.map((build) => {
       const parts = (buildDetailsMap.get(Number(build.id)) || []).map((detail) => detail.component?.name || detail.component?.baseComponent?.name || '').filter(Boolean);
+      const compatBadge = build.compatible
+        ? '<span class="badge badge-green">Tương thích</span>'
+        : '<span class="badge badge-crimson">Cần xem lại</span>';
       return `
-        <article class="stack-item">
-          <strong>${escapeHtml(build.title || `Build #${build.id}`)}</strong>
-          <div>${escapeHtml(parts.join(', ') || 'Chưa có linh kiện')}</div>
-          <div>${money(build.totalPrice)}</div>
-          <div>${build.compatible ? 'Tương thích' : 'Cần xem lại'}</div>
-          <div class="account-item-actions">
-            <button class="button ghost account-edit-build-btn" type="button" data-build-id="${build.id}">Sửa build</button>
-            <button class="button ghost account-delete-build-btn" type="button" data-build-id="${build.id}">Xóa build</button>
+        <div class="build-card">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
+            <div class="build-card-title">${escapeHtml(build.title || `Build #${build.id}`)}</div>
+            ${compatBadge}
           </div>
-        </article>
+          <div class="build-card-parts">${escapeHtml(parts.join(' · ') || 'Chưa có linh kiện')}</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding-top:10px;border-top:1px solid var(--border)">
+            <span class="build-card-price">${money(build.totalPrice)}</span>
+            <div class="build-card-actions">
+              <button class="btn outline btn-sm account-edit-build-btn" type="button" data-build-id="${build.id}">✏️ Sửa</button>
+              <button class="btn outline btn-sm account-delete-build-btn" type="button" data-build-id="${build.id}">🗑️ Xóa</button>
+            </div>
+          </div>
+        </div>
       `;
-    }).join('') : '<div class="empty">Chưa có cấu hình nào được lưu.</div>';
+    }).join('') : '<div class="empty" style="grid-column:1/-1"><div class="empty-icon">🔧</div><span style="font-size:15px;font-weight:600">Chưa có cấu hình nào</span><span>Vào Workspace để tạo build đầu tiên</span><a href="../pages/workspace.html" class="btn outline btn-sm" style="margin-top:8px">Mở Workspace</a></div>';
 
     buildsBox.querySelectorAll('.account-edit-build-btn').forEach((button) => {
-      button.addEventListener('click', async () => {
+      button.addEventListener('click', () => {
         if (!state.currentUser) return;
         const buildId = Number(button.dataset.buildId || 0);
         const build = userBuilds.find((entry) => Number(entry.id) === buildId);
         if (!build) return;
 
-        const title = prompt('Tên build mới:', build.title || '');
-        if (title === null) return;
-        const description = prompt('Mô tả build:', build.description || '');
-        if (description === null) return;
-
-        try {
-          await requestJson(`/builds/${buildId}`, {
-            method: 'PUT',
-            body: JSON.stringify({
-              userId: state.currentUser.id,
-              title,
-              description,
-              totalPrice: build.totalPrice,
-              compatible: Boolean(build.compatible)
-            })
-          });
-          await loadBackendData();
-          await renderAccount();
-          alert('Đã cập nhật build.');
-        } catch (error) {
-          alert(`Lỗi: ${error.message}`);
-        }
+        showInputModal({
+          title: '✏️ Sửa build',
+          fields: [
+            { key: 'title', label: 'Tên build', value: build.title || '', placeholder: 'Tên cấu hình...' },
+            { key: 'description', label: 'Mô tả', type: 'textarea', value: build.description || '', placeholder: 'Mô tả...' }
+          ],
+          confirmLabel: 'Lưu thay đổi',
+          onConfirm: async ({ title, description }) => {
+            try {
+              await requestJson(`/builds/${buildId}`, {
+                method: 'PUT',
+                body: JSON.stringify({ userId: state.currentUser.id, title, description, totalPrice: build.totalPrice, compatible: Boolean(build.compatible) })
+              });
+              showToast('Đã cập nhật build.', 'success');
+              await loadBackendData();
+              await renderAccount();
+            } catch (error) {
+              showToast(`Lỗi: ${error.message}`, 'error');
+            }
+          }
+        });
       });
     });
 
     buildsBox.querySelectorAll('.account-delete-build-btn').forEach((button) => {
-      button.addEventListener('click', async () => {
+      button.addEventListener('click', () => {
         const buildId = Number(button.dataset.buildId || 0);
         if (!buildId) return;
-        if (!confirm('Bạn chắc chắn muốn xóa build này?')) return;
-        try {
-          await requestJson(`/builds/${buildId}`, { method: 'DELETE' });
-          await loadBackendData();
-          await renderAccount();
-          alert('Đã xóa build.');
-        } catch (error) {
-          alert(`Lỗi: ${error.message}`);
-        }
+        showModal({
+          title: 'Xóa build',
+          body: 'Bạn chắc chắn muốn xóa build này? Hành động không thể hoàn tác.',
+          confirmLabel: 'Xóa', danger: true,
+          onConfirm: async () => {
+            try {
+              await requestJson(`/builds/${buildId}`, { method: 'DELETE' });
+              showToast('Đã xóa build.', 'success');
+              await loadBackendData();
+              await renderAccount();
+            } catch (error) {
+              showToast(`Lỗi: ${error.message}`, 'error');
+            }
+          }
+        });
       });
     });
   }
@@ -1410,93 +1706,98 @@ async function renderAccount() {
       ? state.reviews.filter((review) => Number(review.user?.id) === Number(state.currentUser.id))
       : [];
 
+    const reviewsCountLabel = byId('reviewsCountLabel');
+    if (reviewsCountLabel) reviewsCountLabel.textContent = `${myReviews.length} đánh giá của bạn`;
+
     reviewsBox.innerHTML = state.currentUser ? myReviews.map((review) => `
-      <article class="stack-item">
-        <strong>${escapeHtml(review.component?.name || review.component?.baseComponent?.name || 'Linh kiện')}</strong>
-        <div>${'★'.repeat(Number(review.ratingStar || review.rating || 0))}</div>
-        <p>${escapeHtml(review.commentText || review.comment || '')}</p>
-        <div class="account-item-actions">
-          <button class="button ghost account-edit-review-btn" type="button" data-review-id="${review.id}">Sửa review</button>
-          <button class="button ghost account-delete-review-btn" type="button" data-review-id="${review.id}">Xóa review</button>
+      <div class="review-item">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+          <span class="review-author">${escapeHtml(review.component?.name || review.component?.baseComponent?.name || 'Linh kiện')}</span>
+          <span class="review-stars">${'★'.repeat(Number(review.ratingStar || review.rating || 0))}${'☆'.repeat(Math.max(0, 5 - Number(review.ratingStar || review.rating || 0)))}</span>
         </div>
-      </article>
-    `).join('') || '<div class="empty">Bạn chưa có review nào.</div>' : '<div class="empty">Đăng nhập để xem đánh giá của bạn.</div>';
+        <p class="review-text">${escapeHtml(review.commentText || review.comment || '')}</p>
+        <div class="account-item-actions">
+          <button class="btn outline btn-sm account-edit-review-btn" type="button" data-review-id="${review.id}">✏️ Sửa</button>
+          <button class="btn outline btn-sm account-delete-review-btn" type="button" data-review-id="${review.id}">🗑️ Xóa</button>
+        </div>
+      </div>
+    `).join('') || '<div class="empty"><div class="empty-icon">⭐</div><span>Bạn chưa có review nào.</span></div>'
+      : '<div class="empty"><div class="empty-icon">🔒</div><span>Đăng nhập để xem đánh giá của bạn.</span></div>';
 
     reviewsBox.querySelectorAll('.account-edit-review-btn').forEach((button) => {
-      button.addEventListener('click', async () => {
+      button.addEventListener('click', () => {
         if (!state.currentUser) return;
         const reviewId = Number(button.dataset.reviewId || 0);
         const review = myReviews.find((entry) => Number(entry.id) === reviewId);
         if (!review) return;
-
-        const oldRating = Number(review.ratingStar || review.rating || 5);
-        const ratingRaw = prompt('Điểm sao (1-5):', String(oldRating));
-        if (ratingRaw === null) return;
-        const ratingStar = Number(ratingRaw || 0);
-        if (!Number.isInteger(ratingStar) || ratingStar < 1 || ratingStar > 5) {
-          alert('Điểm sao phải từ 1 đến 5.');
-          return;
-        }
-
-        const oldComment = review.commentText || review.comment || '';
-        const commentText = prompt('Nội dung review:', oldComment);
-        if (commentText === null) return;
-
         const componentId = Number(review.component?.id || review.componentId || 0);
-        if (!componentId) {
-          alert('Không xác định được linh kiện của review này.');
-          return;
-        }
+        if (!componentId) { showToast('Không xác định được linh kiện của review này.', 'error'); return; }
 
-        try {
-          await requestJson(`/reviews/${reviewId}`, {
-            method: 'PUT',
-            body: JSON.stringify({
-              userId: state.currentUser.id,
-              componentId,
-              ratingStar,
-              commentText
-            })
-          });
-          await loadBackendData();
-          await renderAccount();
-          alert('Đã cập nhật review.');
-        } catch (error) {
-          alert(`Lỗi: ${error.message}`);
-        }
+        showInputModal({
+          title: '✏️ Sửa đánh giá',
+          fields: [
+            { key: 'ratingStar', label: 'Điểm sao (1–5)', type: 'number', value: String(review.ratingStar || review.rating || 5), placeholder: '5' },
+            { key: 'commentText', label: 'Nội dung', type: 'textarea', value: review.commentText || review.comment || '', placeholder: 'Nội dung đánh giá...' }
+          ],
+          confirmLabel: 'Lưu thay đổi',
+          onConfirm: async ({ ratingStar, commentText }) => {
+            const star = Number(ratingStar || 0);
+            if (!Number.isInteger(star) || star < 1 || star > 5) {
+              showToast('Điểm sao phải từ 1 đến 5.', 'error'); return;
+            }
+            try {
+              await requestJson(`/reviews/${reviewId}`, {
+                method: 'PUT',
+                body: JSON.stringify({ userId: state.currentUser.id, componentId, ratingStar: star, commentText })
+              });
+              showToast('Đã cập nhật review.', 'success');
+              await loadBackendData();
+              await renderAccount();
+            } catch (error) {
+              showToast(`Lỗi: ${error.message}`, 'error');
+            }
+          }
+        });
       });
     });
 
     reviewsBox.querySelectorAll('.account-delete-review-btn').forEach((button) => {
-      button.addEventListener('click', async () => {
+      button.addEventListener('click', () => {
         const reviewId = Number(button.dataset.reviewId || 0);
         if (!reviewId) return;
-        if (!confirm('Bạn chắc chắn muốn xóa review này?')) return;
-        try {
-          await requestJson(`/reviews/${reviewId}`, { method: 'DELETE' });
-          await loadBackendData();
-          await renderAccount();
-          alert('Đã xóa review.');
-        } catch (error) {
-          alert(`Lỗi: ${error.message}`);
-        }
+        showModal({
+          title: 'Xóa đánh giá',
+          body: 'Bạn chắc chắn muốn xóa đánh giá này?',
+          confirmLabel: 'Xóa', danger: true,
+          onConfirm: async () => {
+            try {
+              await requestJson(`/reviews/${reviewId}`, { method: 'DELETE' });
+              showToast('Đã xóa review.', 'success');
+              await loadBackendData();
+              await renderAccount();
+            } catch (error) {
+              showToast(`Lỗi: ${error.message}`, 'error');
+            }
+          }
+        });
       });
     });
   }
 
   saveBtn?.addEventListener('click', async () => {
-    if (!state.currentUser) {
-      alert('Hãy đăng nhập trước.');
-      return;
-    }
+    if (!state.currentUser) { showToast('Hãy đăng nhập trước.', 'error'); return; }
+    const btn = saveBtn;
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Đang lưu...'; }
     try {
       await createBackendBuild(state.workspace);
+      showToast('Đã lưu cấu hình lên backend.', 'success');
       await loadBackendData();
       await renderAccount();
       syncHeader();
-      alert('Đã lưu cấu hình lên backend.');
     } catch (error) {
-      alert(`Không thể lưu cấu hình: ${error.message}`);
+      showToast(`Không thể lưu cấu hình: ${error.message}`, 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '💾 Lưu build từ Workspace'; }
     }
   });
 }
@@ -1535,15 +1836,17 @@ async function renderComponentPrices(baseComponentId) {
       });
 
       componentPricesList.innerHTML = sortedPrices.map((price) => `
-        <article class="stack-item" style="display: flex; justify-content: space-between; align-items: start; gap: 12px;">
+        <div class="price-source-item">
           <div>
-            <strong>${escapeHtml(price.sourceName)}</strong>
-            <div>Giá: ${money(price.priceValue)}</div>
-            <div>Thời gian crawl: ${escapeHtml(formatDateTime(price.crawledAt) || '-')}</div>
+            <div class="source-name">${escapeHtml(price.sourceName)}</div>
+            <div class="source-time">${escapeHtml(formatDateTime(price.crawledAt) || '-')}</div>
           </div>
-          <button class="delete-price-btn" data-price-id="${price.id}" style="padding: 5px 10px; background: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap;">Xóa</button>
-        </article>
-      `).join('') || '<div class="empty">Chưa có giá crawl nào.</div>';
+          <div style="display:flex;align-items:center;gap:12px">
+            <span class="source-price">${money(price.priceValue)}</span>
+            <button class="btn outline btn-sm delete-price-btn" data-price-id="${price.id}" style="color:var(--crimson);border-color:rgba(192,57,43,.3);white-space:nowrap">🗑️ Xóa</button>
+          </div>
+        </div>
+      `).join('') || '<div class="empty"><div class="empty-icon">💰</div><span>Chưa có giá crawl nào.</span></div>';
 
       // Add delete price listeners
       document.querySelectorAll('.delete-price-btn').forEach((btn) => {
@@ -1608,21 +1911,58 @@ function renderAdmin() {
 
   if (stats) {
     stats.innerHTML = `
-      <article class="stat-card"><span>Linh kiện</span><strong>${catalogItems().length}</strong></article>
-      <article class="stat-card"><span>Người dùng</span><strong>${state.users.length}</strong></article>
-      <article class="stat-card"><span>Đánh giá</span><strong>${state.reviews.length}</strong></article>
-      <article class="stat-card"><span>Build</span><strong>${state.builds.length}</strong></article>
+      <article class="admin-stat"><span>Linh kiện</span><strong>${catalogItems().length}</strong></article>
+      <article class="admin-stat"><span>Người dùng</span><strong>${state.users.length}</strong></article>
+      <article class="admin-stat"><span>Đánh giá</span><strong>${state.reviews.length}</strong></article>
+      <article class="admin-stat"><span>Build</span><strong>${state.builds.length}</strong></article>
     `;
   }
 
   if (buildsList) {
     buildsList.innerHTML = (state.builds || []).map((build) => `
-      <article class="stack-item">
-        <strong>${escapeHtml(build.buildName || build.name || `Build #${build.id}`)}</strong>
-        <div>User: ${escapeHtml(build.user?.email || 'N/A')}</div>
-        <div>${(build.buildDetails || []).length} linh kiện</div>
-      </article>
-    `).join('') || '<div class="empty">Không có build nào.</div>';
+      <div class="stack-item" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div>
+          <strong>${escapeHtml(build.title || build.buildName || build.name || `Build #${build.id}`)}</strong>
+          <div style="font-size:13px;color:var(--text-3);margin-top:3px">👤 ${escapeHtml(build.user?.email || 'N/A')}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--crimson)">${money(build.totalPrice || 0)}</div>
+          <div style="font-size:12px;color:var(--text-3);margin-top:2px">${build.compatible ? '✅ Tương thích' : '⚠️ Cần xem lại'}</div>
+        </div>
+      </div>
+    `).join('') || '<div class="empty"><div class="empty-icon">🔧</div><span>Không có build nào.</span></div>';
+  }
+
+  // Render reviews tab
+  const reviewsList = byId('adminReviewsList');
+  if (reviewsList) {
+    reviewsList.innerHTML = (state.reviews || []).map((review) => `
+      <div class="stack-item" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+            <strong style="font-size:14px">${escapeHtml(review.component?.name || review.component?.baseComponent?.name || 'Linh kiện')}</strong>
+            <span style="color:#f59e0b;font-size:13px">${'★'.repeat(Number(review.ratingStar || review.rating || 0))}${'☆'.repeat(Math.max(0,5-Number(review.ratingStar||review.rating||0)))}</span>
+          </div>
+          <div style="font-size:13px;color:var(--text-3)">👤 ${escapeHtml(review.user?.email || 'Người dùng')}</div>
+          <p style="font-size:14px;color:var(--text-2);margin-top:6px;line-height:1.5">${escapeHtml(review.commentText || review.comment || '')}</p>
+        </div>
+        <button class="btn outline btn-sm admin-delete-review-btn" data-review-id="${review.id}">🗑️ Xóa</button>
+      </div>
+    `).join('') || '<div class="empty"><div class="empty-icon">⭐</div><span>Không có đánh giá nào.</span></div>';
+
+    reviewsList.querySelectorAll('.admin-delete-review-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const reviewId = Number(btn.dataset.reviewId);
+        if (!confirm('Xóa đánh giá này?')) return;
+        try {
+          await requestJson(`/reviews/${reviewId}`, { method: 'DELETE' });
+          await loadBackendData();
+          renderAdmin();
+        } catch (error) {
+          alert(`Lỗi: ${error.message}`);
+        }
+      });
+    });
   }
 
 
@@ -1783,49 +2123,51 @@ function renderAdmin() {
   // ===== QUẢN LÝ NGƯỜI DÙNG =====
   const usersList = byId('adminUsersList');
   if (usersList) {
-    usersList.innerHTML = (state.users || []).map((user) => `
-      <article class="stack-item" style="display: flex; justify-content: space-between; align-items: center;">
-        <div>
-          <strong>${escapeHtml(user.email)}</strong>
-          <p>Vai trò: ${user.role || 'USER'}</p>
-        </div>
-        <div style="display: flex; gap: 10px;">
-          <button class="change-role-btn" data-user-id="${user.id}" style="padding: 5px 10px; background: #1f9d4c; color: white; border: none; border-radius: 4px; cursor: pointer;">Đổi role</button>
-          <button class="delete-user-btn" data-user-id="${user.id}" style="padding: 5px 10px; background: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer;">Xóa</button>
-        </div>
-      </article>
-    `).join('') || '<div class="empty">Không có người dùng.</div>';
+    usersList.innerHTML = (state.users || []).map((user) => {
+      const isAdmin = String(user.role || '').toUpperCase() === 'ADMIN';
+      return `
+        <div class="stack-item" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:38px;height:38px;border-radius:50%;background:var(--ice);border:1px solid var(--ice-mid);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700;color:var(--navy);flex-shrink:0">${escapeHtml((user.email||'?').charAt(0).toUpperCase())}</div>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--navy)">${escapeHtml(user.email)}</div>
+              <div style="margin-top:3px">${isAdmin ? '<span class="badge badge-navy">ADMIN</span>' : '<span class="badge badge-ice">USER</span>'}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn outline btn-sm change-role-btn" data-user-id="${user.id}">⇄ ${isAdmin ? 'Hạ USER' : 'Lên ADMIN'}</button>
+            <button class="btn outline btn-sm admin-delete-user-btn" data-user-id="${user.id}" style="color:var(--crimson);border-color:rgba(192,57,43,.3)">🗑️ Xóa</button>
+          </div>
+        </div>`;
+    }).join('') || '<div class="empty"><div class="empty-icon">👥</div><span>Không có người dùng.</span></div>';
 
-    document.querySelectorAll('.change-role-btn').forEach((btn) => {
-      btn.addEventListener('click', async (e) => {
+    usersList.querySelectorAll('.change-role-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
         const userId = Number(btn.dataset.userId);
-        const user = state.users.find((u) => u.id === userId);
+        const user = state.users.find((u) => Number(u.id) === userId);
         if (!user) return;
-        const currentRole = String(user.role || 'USER').toUpperCase();
-        const newRole = currentRole === 'ADMIN' ? 'USER' : 'ADMIN';
+        const newRole = String(user.role || 'USER').toUpperCase() === 'ADMIN' ? 'USER' : 'ADMIN';
         try {
           await requestJson(`/users/${userId}/role`, {
             method: 'PUT',
             body: JSON.stringify({ role: newRole })
           });
           await loadBackendData();
-          await renderAdmin();
-          alert(`Đã đổi vai trò thành ${newRole}.`);
+          renderAdmin();
         } catch (error) {
           alert(`Lỗi: ${error.message}`);
         }
       });
     });
 
-    document.querySelectorAll('.delete-user-btn').forEach((btn) => {
-      btn.addEventListener('click', async (e) => {
+    usersList.querySelectorAll('.admin-delete-user-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
         const userId = Number(btn.dataset.userId);
         if (!confirm('Bạn chắc chắn muốn xóa người dùng này?')) return;
         try {
           await requestJson(`/users/${userId}`, { method: 'DELETE' });
           await loadBackendData();
-          await renderAdmin();
-          alert('Đã xóa người dùng.');
+          renderAdmin();
         } catch (error) {
           alert(`Lỗi: ${error.message}`);
         }
@@ -1837,100 +2179,76 @@ function renderAdmin() {
   document.querySelectorAll('.admin-tab-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       const tabName = btn.dataset.tab;
-      // Ẩn tất cả tabs
       document.querySelectorAll('.admin-tab-content').forEach((content) => {
-        content.style.display = 'none';
+        content.classList.remove('active');
       });
-      // Xóa active từ tất cả buttons
       document.querySelectorAll('.admin-tab-btn').forEach((b) => {
         b.classList.remove('active');
-        b.style.borderBottomColor = 'transparent';
-        b.style.color = '#555';
       });
-      // Hiển thị tab được chọn
       const tabContent = byId(`tab-${tabName}`);
-      if (tabContent) {
-        tabContent.style.display = 'block';
-      }
-      // Active button được chọn
+      if (tabContent) tabContent.classList.add('active');
       btn.classList.add('active');
-      btn.style.borderBottomColor = '#1f9d4c';
-      btn.style.color = '#1f9d4c';
     });
   });
 }
 
 async function renderAuth() {
-  const loginBtn = byId('loginBtn');
+  const loginBtn    = byId('loginBtn');
   const registerBtn = byId('registerBtn');
-  const message = byId('authMessage');
+  const message     = byId('authMessage');
 
-  if (message) {
-    message.innerHTML = state.users.length
-      ? `Có <strong>${state.users.length}</strong> tài khoản trong hệ thống.`
-      : 'Chưa tải được danh sách tài khoản từ backend.';
+  function showMsg(text, type) {
+    if (!message) return;
+    message.textContent = text;
+    message.className = `auth-message ${type}`;
   }
 
   loginBtn?.addEventListener('click', async () => {
-    const email = byId('loginEmail')?.value.trim();
+    const email    = byId('loginEmail')?.value.trim();
     const password = byId('loginPassword')?.value.trim();
-    if (!email || !password) {
-      if (message) message.textContent = 'Vui lòng nhập email và mật khẩu.';
-      return;
-    }
+    if (!email || !password) { showMsg('Vui lòng nhập email và mật khẩu.', 'err'); return; }
 
+    loginBtn.disabled = true; loginBtn.textContent = 'Đang đăng nhập...';
     try {
-      const response = await requestJson('/users', { method: 'GET' });
-      const users = Array.isArray(response) ? response : [];
-      const user = users.find((item) => item.email.toLowerCase() === email.toLowerCase());
-      if (!user) {
-        if (message) message.textContent = 'Không tìm thấy tài khoản, hãy đăng ký trước.';
-        return;
-      }
-
+      const users = Array.isArray(await requestJson('/users')) ? await requestJson('/users') : [];
+      const user  = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+      if (!user) { showMsg('Không tìm thấy tài khoản, hãy đăng ký trước.', 'err'); return; }
       persistCurrentUser(user.id);
       syncHeader();
-      if (message) message.textContent = `Đã đăng nhập: ${user.email}`;
-
-      const role = String(user.role || 'USER').toUpperCase();
-      if (role === 'ADMIN') {
-        setTimeout(() => {
-          location.href = pageHref('admin');
-        }, 500);
-      }
+      showMsg(`✅ Đăng nhập thành công: ${user.email}`, 'ok');
+      setTimeout(() => {
+        location.href = String(user.role || '').toUpperCase() === 'ADMIN'
+          ? pageHref('admin') : pageHref('home');
+      }, 700);
     } catch (error) {
-      if (message) message.textContent = `Không đăng nhập được: ${error.message}`;
+      showMsg(`Không đăng nhập được: ${error.message}`, 'err');
+    } finally {
+      loginBtn.disabled = false; loginBtn.textContent = 'Đăng nhập';
     }
   });
 
   registerBtn?.addEventListener('click', async () => {
-    const email = byId('registerEmail')?.value.trim();
-    const password = byId('registerPassword')?.value.trim();
+    const email           = byId('registerEmail')?.value.trim();
+    const password        = byId('registerPassword')?.value.trim();
     const passwordConfirm = byId('registerPasswordConfirm')?.value.trim();
-    if (!email || !password || !passwordConfirm) {
-      if (message) message.textContent = 'Vui lòng nhập đầy đủ thông tin.';
-      return;
-    }
-    if (password !== passwordConfirm) {
-      if (message) message.textContent = 'Mật khẩu xác nhận không khớp.';
-      return;
-    }
+    if (!email || !password || !passwordConfirm) { showMsg('Vui lòng nhập đầy đủ thông tin.', 'err'); return; }
+    if (password !== passwordConfirm) { showMsg('Mật khẩu xác nhận không khớp.', 'err'); return; }
 
+    registerBtn.disabled = true; registerBtn.textContent = 'Đang tạo tài khoản...';
     try {
       const user = await requestJson('/users', {
         method: 'POST',
-        body: JSON.stringify({
-          email,
-          password,
-          role: 'USER'
-        })
+        body: JSON.stringify({ email, password, role: 'USER' })
       });
       await loadBackendData();
       persistCurrentUser(user.id);
       syncHeader();
-      if (message) message.textContent = `Đã tạo và đăng nhập: ${user.email}`;
+      showMsg(`✅ Tạo tài khoản thành công: ${user.email}`, 'ok');
+      setTimeout(() => { location.href = pageHref('home'); }, 700);
     } catch (error) {
-      if (message) message.textContent = `Không thể tạo tài khoản: ${error.message}`;
+      showMsg(`Không thể tạo tài khoản: ${error.message}`, 'err');
+    } finally {
+      registerBtn.disabled = false; registerBtn.textContent = 'Tạo tài khoản';
     }
   });
 }

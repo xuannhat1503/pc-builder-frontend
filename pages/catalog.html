@@ -3,27 +3,62 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Danh sách linh kiện</title>
-  <link rel="stylesheet" href="/assets/css/style.css" />
+  <title>Linh kiện — PCBuilder</title>
+  <link rel="stylesheet" href="../assets/css/style.css" />
 </head>
 <body data-page="catalog">
   <div id="header-placeholder"></div>
-  <main class="page-shell">
-    <section class="hero hero-simple">
-      <div>
-        <h1>Danh sách linh kiện</h1>
-      </div>
-    </section>
 
-    <section class="panel-card">
-      <div class="toolbar">
-        <input id="catalogSearch" type="search" placeholder="Tìm CPU, GPU, RAM..." />
+  <main>
+    <div class="page-shell">
+
+      <!-- Page hero -->
+      <div class="page-hero diag-band">
+        <div class="page-hero-row">
+          <div>
+            <div class="hero-eyebrow">Catalog</div>
+            <h1>Danh sách <em>linh kiện</em></h1>
+            <p>Tìm kiếm và so sánh giá từ nhiều nguồn</p>
+          </div>
+          <div id="catalogSummaryBar" style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end"></div>
+        </div>
       </div>
-      <div id="catalogFilters" class="chip-row"></div>
-      <div id="catalogGrid" class="card-grid"></div>
-    </section>
+
+      <!-- Toolbar -->
+      <div class="catalog-toolbar">
+        <input id="catalogSearch" type="search" placeholder="Tìm CPU, GPU, RAM, Mainboard, PSU..." />
+        <select id="catalogSort" style="width:auto;min-width:170px">
+          <option value="default">Sắp xếp mặc định</option>
+          <option value="price-asc">Giá: thấp → cao</option>
+          <option value="price-desc">Giá: cao → thấp</option>
+          <option value="name-asc">Tên A → Z</option>
+        </select>
+      </div>
+
+      <!-- Filter chips -->
+      <div class="chip-row" id="catalogFilters"></div>
+
+      <!-- Meta row -->
+      <div class="catalog-meta">
+        <span id="catalogCount"></span>
+        <span id="catalogCheapest"></span>
+      </div>
+
+      <!-- Grid -->
+      <div class="card-grid" id="catalogGrid">
+        <div class="skeleton-card"><div class="skeleton sk-title"></div><div class="skeleton sk-sub mt-8"></div><div class="skeleton sk-price mt-12"></div><div class="skeleton sk-line mt-8"></div></div>
+        <div class="skeleton-card"><div class="skeleton sk-title"></div><div class="skeleton sk-sub mt-8"></div><div class="skeleton sk-price mt-12"></div><div class="skeleton sk-line mt-8"></div></div>
+        <div class="skeleton-card"><div class="skeleton sk-title"></div><div class="skeleton sk-sub mt-8"></div><div class="skeleton sk-price mt-12"></div><div class="skeleton sk-line mt-8"></div></div>
+        <div class="skeleton-card"><div class="skeleton sk-title"></div><div class="skeleton sk-sub mt-8"></div><div class="skeleton sk-price mt-12"></div><div class="skeleton sk-line mt-8"></div></div>
+        <div class="skeleton-card"><div class="skeleton sk-title"></div><div class="skeleton sk-sub mt-8"></div><div class="skeleton sk-price mt-12"></div><div class="skeleton sk-line mt-8"></div></div>
+        <div class="skeleton-card"><div class="skeleton sk-title"></div><div class="skeleton sk-sub mt-8"></div><div class="skeleton sk-price mt-12"></div><div class="skeleton sk-line mt-8"></div></div>
+      </div>
+
+    </div>
   </main>
+
   <div id="footer-placeholder"></div>
-  <script src="/assets/js/app.js"></script>
+  <div id="toast-container"></div>
+  <script src="../assets/js/app.js"></script>
 </body>
 </html>
