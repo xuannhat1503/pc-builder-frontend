@@ -143,9 +143,12 @@ function componentCreatePayload(type) {
 }
 
 function resolveApiBase() {
-  if (window.PC_API_BASE) return String(window.PC_API_BASE).replace(/\/$/, '');
-  if (location.protocol === 'file:') return 'http://localhost:8080/api';
-  if (location.port === '8080') return `${location.origin}/api`;
+  // Kiểm tra nếu đang chạy trên Vercel (không phải localhost)
+  if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+    return 'https://pc-builder-backend-gklg.onrender.com/api'; 
+  }
+  
+  // Mặc định cho môi trường local
   return 'http://localhost:8080/api';
 }
 
